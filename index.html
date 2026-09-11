@@ -146,9 +146,9 @@
                 return;
             }
 
-            // Forzar mediante el AccountChooser de Google usando el correo exacto
-            const targetUrl = 'https://calendar.google.com/calendar/r/search?q=' + encodeURIComponent(query);
-            const urlCalendar = `https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(targetUrl)}&Email=tvsaladiaz21@gmail.com`;
+            // Usar la URL de inicio de sesión de Google forzando la cuenta específica mediante addAccount o authuser numérico si ya está agregada
+            // Si tvsaladiaz21@gmail.com es tu segunda o tercera cuenta, puedes cambiar el índice en authuser de 0 a 1 o 2.
+            const urlCalendar = `https://calendar.google.com/calendar/u/1/r/search?q=${encodeURIComponent(query)}`;
             window.open(urlCalendar, '_blank');
         }
 
