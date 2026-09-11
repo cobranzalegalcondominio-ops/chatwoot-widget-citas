@@ -124,10 +124,10 @@
         </div>
 
         <div class="info-row">
-            <label class="info-label" for="busqueda-paciente">Buscar Cita (Paciente / Nombre):</label>
+            <label class="info-label" for="busqueda-paciente">Buscar Cita (Nombre, Cédula, Teléfono):</label>
             <div class="input-group">
-                <input type="text" id="busqueda-paciente" placeholder="Escribe el nombre del paciente...">
-                <button type="button" class="btn-clear" onclick="limpiarCampo()" title="Limpiar para escribir otro nombre">Limpiar</button>
+                <input type="text" id="busqueda-paciente" placeholder="Escribe nombre, cédula o teléfono...">
+                <button type="button" class="btn-clear" onclick="limpiarCampo()" title="Limpiar para escribir otro dato">Limpiar</button>
             </div>
         </div>
 
@@ -141,7 +141,6 @@
         let contactoGlobal = "";
         let inputModificadoManualmente = false;
 
-        // Detectar si el usuario escribe manualmente para respetar su texto
         document.getElementById('busqueda-paciente').addEventListener('input', function() {
             inputModificadoManualmente = true;
         });
@@ -159,10 +158,10 @@
 
                     document.getElementById('contacto-chat').innerText = `${nombreChat} (${telefonoChat})`;
                     
-                    contactoGlobal = (nombreChat && nombreChat !== 'Sin nombre') ? nombreChat : correoChat;
+                    // Priorizamos el nombre para rellenar, pero el usuario puede buscar por lo que quiera
+                    contactoGlobal = (nombreChat && nombreChat !== 'Sin nombre') ? nombreChat : telefonoChat;
 
                     const inputBusqueda = document.getElementById('busqueda-paciente');
-                    // Solo rellenamos automáticamente si el usuario no ha escrito nada por su cuenta
                     if (!inputModificadoManualmente && (!inputBusqueda.value || inputBusqueda.value === 'Cargando...')) {
                         inputBusqueda.value = contactoGlobal;
                     }
@@ -176,19 +175,20 @@
             const input = document.getElementById('busqueda-paciente');
             input.value = '';
             input.focus();
-            inputModificadoManualmente = true; // Evita que se vuelva a rellenar solo
+            inputModificadoManualmente = true;
         }
 
         function modificarCita() {
             let query = document.getElementById('busqueda-paciente').value.trim();
             
             if (!query) {
-                alert("Por favor ingresa el nombre real del paciente para buscar en el calendario.");
+                alert("Por favor ingresa un nombre, cédula, teléfono o correo para buscar.");
                 return;
             }
 
-            // Realiza la búsqueda en la cuenta correcta (/u/3/) usando exactamente el nombre que escribiste (el paciente real)
-            const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}`;
+            // Usamos la ruta de búsqueda general con vista de lista ("list") 
+            // esto obliga a Google Calendar a revisar todo el contenido interno de los eventos (incluyendo notas y descripciones)
+            const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}&mode=list`;
             window.open(urlCalendar, '_blank');
         }
 
