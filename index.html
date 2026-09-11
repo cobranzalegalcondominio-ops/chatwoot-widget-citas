@@ -146,8 +146,8 @@
                 return;
             }
 
-            // Utiliza la cuenta principal activa del navegador (/u/0/) para la búsqueda global de calendarios
-            const urlCalendar = `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(query)}`;
+            // Forzar la cuenta específica mediante el parámetro authuser con el correo
+            const urlCalendar = `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(query)}&authuser=tvsaladiaz21@gmail.com`;
             window.open(urlCalendar, '_blank');
         }
 
