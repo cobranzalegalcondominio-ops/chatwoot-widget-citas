@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Citas - Widget</title>
+    <title>Panel de Citas - Chatwoot</title>
     <style>
         :root {
             --primary: #0284c7;
@@ -16,96 +16,68 @@
             --danger: #ef4444;
             --danger-hover: #dc2626;
         }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-size: 13px;
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
         }
-
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 14px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-
         h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            font-weight: 600;
+            margin-top: 0;
+            font-size: 16px;
             color: var(--primary);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
         }
-
-        .info-group {
-            margin-bottom: 8px;
+        .info-row {
+            margin-bottom: 10px;
+            font-size: 14px;
         }
-
-        .label {
-            font-weight: 500;
-            color: var(--text-muted);
-            display: inline-block;
-            width: 70px;
-        }
-
-        .value {
-            color: var(--text-main);
+        .info-label {
             font-weight: 600;
+            color: var(--text-muted);
         }
-
-        .actions {
-            margin-top: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        button {
+        .btn {
+            display: block;
             width: 100%;
-            padding: 8px 12px;
+            padding: 10px;
+            margin-top: 10px;
             border: none;
             border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
+            text-align: center;
+            font-size: 14px;
             transition: background 0.2s;
         }
-
         .btn-primary {
             background-color: var(--primary);
             color: white;
         }
-
         .btn-primary:hover {
             background-color: var(--primary-hover);
         }
-
         .btn-danger {
-            background-color: #fee2e2;
-            color: var(--danger);
-        }
-
-        .btn-danger:hover {
             background-color: var(--danger);
             color: white;
         }
-
-        .status-msg {
-            margin-top: 10px;
-            font-size: 11px;
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+        .footer-status {
+            margin-top: 12px;
             text-align: center;
+            font-size: 11px;
             color: var(--text-muted);
-            font-style: italic;
         }
     </style>
 </head>
@@ -113,65 +85,51 @@
 
     <div class="card">
         <h3>Panel de Citas</h3>
+        <div class="info-row">
+            <span class="info-label">Paciente:</span> <span id="nombre-contacto">Cargando...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Teléfono:</span> <span id="telefono-contacto">Cargando...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Correo:</span> <span id="correo-contacto">No disponible</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="modificarCita()">Modificar / Reprogramar Cita</button>
+        <button class="btn btn-danger" onclick="cancelarCita()">Cancelar Cita</button>
         
-        <div id="info-cliente">
-            <div class="info-group"><span class="label">Paciente:</span> <span class="value" id="nombre-paciente">Leyendo...</span></div>
-            <div class="info-group"><span class="label">Teléfono:</span> <span class="value" id="telefono-paciente">Leyendo...</span></div>
-            <div class="info-group"><span class="label">Correo:</span> <span class="value" id="correo-paciente">Leyendo...</span></div>
-        </div>
-
-        <div class="actions">
-            <button class="btn-primary" onclick="reprogramarCita()">Modificar / Reprogramar Cita</button>
-            <button class="btn-danger" onclick="cancelarCita()">Cancelar Cita</button>
-        </div>
-
-        <div class="status-msg" id="status-text">Conectado con Chatwoot</div>
+        <div class="footer-status">Sincronizado con Chatwoot</div>
     </div>
 
     <script>
-        // Escucha los datos que Chatwoot envía automáticamente al cargar el widget en la barra lateral
-        window.addEventListener('message', (event) => {
+        // Escuchar los datos enviados por Chatwoot al cargar el widget en la barra lateral
+        window.addEventListener('message', function (e) {
             try {
-                const data = event.data;
-                // Chatwoot envía un evento tipo 'appContext' con los datos del contacto y la conversación
-                if (data && (data.event === 'appContext' || data.data?.contact)) {
-                    const contacto = data.data ? data.data.contact : data.contact;
-                    
-                    if (contacto) {
-                        document.getElementById('nombre-paciente').innerText = contacto.name || 'No registrado';
-                        document.getElementById('telefono-paciente').innerText = contacto.phone_number || 'N/A';
-                        document.getElementById('correo-paciente').innerText = contacto.email || 'N/A';
-                        
-                        // Guardamos de forma global el teléfono para usarlo en las acciones
-                        window.pacienteTel = contacto.phone_number || '';
-                        window.pacienteNombre = contacto.name || '';
+                const eventData = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                
+                // Chatwoot envía la información del contacto y la conversación actual
+                if (eventData && eventData.event === 'appContext' || eventData.data) {
+                    const contact = eventData.data?.contact || eventData.contact;
+                    if (contact) {
+                        document.getElementById('nombre-contacto').innerText = contact.name || 'Sin nombre';
+                        document.getElementById('telefono-contacto').innerText = contact.phone_number || 'Sin teléfono';
+                        document.getElementById('correo-contacto').innerText = contact.email || 'No registrado';
                     }
                 }
-            } catch (e) {
-                console.error("Error procesando los datos de Chatwoot:", e);
-                document.getElementById('status-text').innerText = "Error al sincronizar datos.";
+            } catch (err) {
+                console.error("Error al procesar mensaje de Chatwoot:", err);
             }
         });
 
-        function reprogramarCita() {
-            const tel = window.pacienteTel || 'Desconocido';
-            const nombre = window.pacienteNombre || 'Paciente';
-            
-            if (!tel || tel === 'N/A') {
-                alert("No se encontró un número de teléfono válido para este contacto.");
-                return;
-            }
-
-            // Aquí puedes disparar una acción (por ejemplo, abrir un webhook tuyo, un n8n o una ventana de gestión)
-            alert(`Acción: Reprogramar cita para ${nombre} (${tel})`);
+        function modificarCita() {
+            const nombre = document.getElementById('nombre-contacto').innerText;
+            alert("Abriendo opciones de modificación para: " + nombre);
         }
 
         function cancelarCita() {
-            const tel = window.pacienteTel || 'Desconocido';
-            const nombre = window.pacienteNombre || 'Paciente';
-
-            if (confirm(`¿Estás segura de que deseas cancelar la cita de ${nombre}?`)) {
-                alert(`Acción: Cita cancelada para ${tel}`);
+            const nombre = document.getElementById('nombre-contacto').innerText;
+            if(confirm("¿Estás segura de cancelar la cita de " + nombre + "?")) {
+                alert("Cita cancelada exitosamente.");
             }
         }
     </script>
