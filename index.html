@@ -146,8 +146,9 @@
                 return;
             }
 
-            // Forzar la cuenta específica mediante el parámetro authuser con el correo
-            const urlCalendar = `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(query)}&authuser=tvsaladiaz21@gmail.com`;
+            // Forzar mediante el AccountChooser de Google usando el correo exacto
+            const targetUrl = 'https://calendar.google.com/calendar/r/search?q=' + encodeURIComponent(query);
+            const urlCalendar = `https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(targetUrl)}&Email=tvsaladiaz21@gmail.com`;
             window.open(urlCalendar, '_blank');
         }
 
