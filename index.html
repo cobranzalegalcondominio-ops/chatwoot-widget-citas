@@ -102,36 +102,35 @@
     </div>
 
     <script>
-        // Escuchar los datos enviados por Chatwoot al cargar el widget en la barra lateral
         window.addEventListener('message', function (e) {
             try {
-                const eventData = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                console.log("Mensaje recibido de Chatwoot:", e.data);
+                const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
                 
-                // Chatwoot envía la información del contacto y la conversación actual
-                if (eventData && eventData.event === 'appContext' || eventData.data) {
-                    const contact = eventData.data?.contact || eventData.contact;
-                    if (contact) {
-                        document.getElementById('nombre-contacto').innerText = contact.name || 'Sin nombre';
-                        document.getElementById('telefono-contacto').innerText = contact.phone_number || 'Sin teléfono';
-                        document.getElementById('correo-contacto').innerText = contact.email || 'No registrado';
-                    }
+                // Extraer el contacto de distintas estructuras posibles que envía Chatwoot
+                const contact = data.contact || data.data?.contact || (data.event === 'appContext' && data.data?.currentContact);
+                
+                if (contact) {
+                    document.getElementById('nombre-contacto').innerText = contact.name || 'Sin nombre';
+                    document.getElementById('telefono-contacto').innerText = contact.phone_number || contact.phone || 'Sin teléfono';
+                    document.getElementById('correo-contacto').innerText = contact.email || 'No registrado';
                 }
             } catch (err) {
-                console.error("Error al procesar mensaje de Chatwoot:", err);
+                console.error("Error al procesar mensaje:", err);
             }
         });
 
         function modificarCita() {
             const nombre = document.getElementById('nombre-contacto').innerText;
-            alert("Abriendo opciones de modificación para: " + nombre);
+            alert("Modificando cita para: " + nombre);
         }
 
         function cancelarCita() {
             const nombre = document.getElementById('nombre-contacto').innerText;
-            if(confirm("¿Estás segura de cancelar la cita de " + nombre + "?")) {
-                alert("Cita cancelada exitosamente.");
+            if(confirm("¿Deseas cancelar la cita de " + nombre + "?")) {
+                alert("Cita cancelada.");
             }
         }
     </script>
 </body>
-</html>
+</html>    
