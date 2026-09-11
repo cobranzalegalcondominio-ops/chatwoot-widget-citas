@@ -45,6 +45,18 @@
         .info-label {
             font-weight: 600;
             color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+            color: var(--text-main);
         }
         .btn {
             display: block;
@@ -85,18 +97,19 @@
 
     <div class="card">
         <h3>Panel de Citas</h3>
+        
         <div class="info-row">
-            <span class="info-label">Paciente:</span> <span id="nombre-contacto">Cargando...</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Teléfono:</span> <span id="telefono-contacto">Cargando...</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Correo:</span> <span id="correo-contacto">No disponible</span>
+            <span class="info-label">Contacto (WhatsApp):</span>
+            <span id="contacto-chat" style="font-size: 13px; color: var(--text-muted);">Cargando...</span>
         </div>
 
-        <button class="btn btn-primary" onclick="modificarCita()">Modificar / Reprogramar Cita</button>
-        <button class="btn btn-danger" onclick="cancelarCita()">Cancelar Cita</button>
+        <div class="info-row">
+            <label class="info-label" for="busqueda-paciente">Buscar Cita por Nombre o Correo:</label>
+            <input type="text" id="busqueda-paciente" placeholder="Escribe el nombre del paciente...">
+        </div>
+
+        <button class="btn btn-primary" onclick="modificarCita()">Buscar en Google Calendar</button>
+        <button class="btn btn-danger" onclick="cancelarCita()">Buscar para Cancelar</button>
         
         <div class="footer-status">Sincronizado con Chatwoot</div>
     </div>
@@ -104,16 +117,23 @@
     <script>
         window.addEventListener('message', function (e) {
             try {
-                console.log("Mensaje recibido de Chatwoot:", e.data);
                 const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                
-                // Extraer el contacto de distintas estructuras posibles que envía Chatwoot
                 const contact = data.contact || data.data?.contact || (data.event === 'appContext' && data.data?.currentContact);
                 
                 if (contact) {
-                    document.getElementById('nombre-contacto').innerText = contact.name || 'Sin nombre';
-                    document.getElementById('telefono-contacto').innerText = contact.phone_number || contact.phone || 'Sin teléfono';
-                    document.getElementById('correo-contacto').innerText = contact.email || 'No registrado';
+                    const nombreChat = contact.name || 'Sin nombre';
+                    const telefonoChat = contact.phone_number || contact.phone || '';
+                    const correoChat = contact.email || '';
+
+                    // Mostrar info del chat
+                    document.getElementById('contacto-chat').innerText = `${nombreChat} (${telefonoChat})`;
+                    
+                    // Rellenar automáticamente el input con el nombre o correo del chat, 
+                    // permitiendo que el operador lo edite manualmente si la cita es para otra persona.
+                    const inputBusqueda = document.getElementById('busqueda-paciente');
+                    if (!inputBusqueda.value || inputBusqueda.value === 'Cargando...') {
+                        inputBusqueda.value = correoChat && correoChat !== 'No registrado' ? correoChat : nombreChat;
+                    }
                 }
             } catch (err) {
                 console.error("Error al procesar mensaje:", err);
@@ -121,16 +141,20 @@
         });
 
         function modificarCita() {
-            const nombre = document.getElementById('nombre-contacto').innerText;
-            alert("Modificando cita para: " + nombre);
+            const query = document.getElementById('busqueda-paciente').value.trim();
+            
+            if (!query) {
+                alert("Por favor ingresa un nombre o correo para buscar.");
+                return;
+            }
+
+            const urlCalendar = `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(query)}`;
+            window.open(urlCalendar, '_blank');
         }
 
         function cancelarCita() {
-            const nombre = document.getElementById('nombre-contacto').innerText;
-            if(confirm("¿Deseas cancelar la cita de " + nombre + "?")) {
-                alert("Cita cancelada.");
-            }
+            modificarCita(); // Usa la misma caja de texto para buscar y ubicar la cita a cancelar
         }
     </script>
 </body>
-</html>    
+</html>
