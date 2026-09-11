@@ -15,6 +15,8 @@
             --border-color: #e2e8f0;
             --danger: #ef4444;
             --danger-hover: #dc2626;
+            --success: #10b981;
+            --success-hover: #059669;
             --secondary: #64748b;
             --secondary-hover: #475569;
         }
@@ -98,6 +100,13 @@
         .btn-primary:hover {
             background-color: var(--primary-hover);
         }
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: var(--success-hover);
+        }
         .btn-danger {
             background-color: var(--danger);
             color: white;
@@ -132,6 +141,7 @@
         </div>
 
         <button class="btn btn-primary" onclick="modificarCita()">Buscar en Google Calendar</button>
+        <button class="btn btn-success" onclick="reagendarCita()">Reagendar Cita</button>
         <button class="btn btn-danger" onclick="cancelarCita()">Buscar para Cancelar</button>
         
         <div class="footer-status">Sincronizado con Chatwoot</div>
@@ -158,7 +168,6 @@
 
                     document.getElementById('contacto-chat').innerText = `${nombreChat} (${telefonoChat})`;
                     
-                    // Priorizamos el nombre para rellenar, pero el usuario puede buscar por lo que quiera
                     contactoGlobal = (nombreChat && nombreChat !== 'Sin nombre') ? nombreChat : telefonoChat;
 
                     const inputBusqueda = document.getElementById('busqueda-paciente');
@@ -178,16 +187,28 @@
             inputModificadoManualmente = true;
         }
 
-        function modificarCita() {
+        function obtenerQuery() {
             let query = document.getElementById('busqueda-paciente').value.trim();
-            
             if (!query) {
                 alert("Por favor ingresa un nombre, cédula, teléfono o correo para buscar.");
-                return;
+                return null;
             }
+            return query;
+        }
 
-            // Usamos la ruta de búsqueda general con vista de lista ("list") 
-            // esto obliga a Google Calendar a revisar todo el contenido interno de los eventos (incluyendo notas y descripciones)
+        function modificarCita() {
+            let query = obtenerQuery();
+            if (!query) return;
+
+            const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}&mode=list`;
+            window.open(urlCalendar, '_blank');
+        }
+
+        function reagendarCita() {
+            let query = obtenerQuery();
+            if (!query) return;
+
+            // Realiza la misma búsqueda profunda para ubicar el evento rápidamente y cambiar su fecha u hora
             const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}&mode=list`;
             window.open(urlCalendar, '_blank');
         }
@@ -197,4 +218,4 @@
         }
     </script>
 </body>
-</html>
+</html>         
