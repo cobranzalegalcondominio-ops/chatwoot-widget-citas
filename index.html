@@ -115,9 +115,7 @@
     </div>
 
     <script>
-        // Correo asignado para las pruebas y la cuenta institucional
-        const CORREO_CLINICA = "tvsaladiaz21@gmail.com";
-
+        // Captura de datos desde Chatwoot
         window.addEventListener('message', function (e) {
             try {
                 const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
@@ -148,8 +146,8 @@
                 return;
             }
 
-            // Abre Google Calendar forzando la cuenta de la clínica y realizando una búsqueda global
-            const urlCalendar = `https://calendar.google.com/calendar/u/${encodeURIComponent(CORREO_CLINICA)}/r/search?q=${encodeURIComponent(query)}`;
+            // Utiliza la cuenta principal activa del navegador (/u/0/) para la búsqueda global de calendarios
+            const urlCalendar = `https://calendar.google.com/calendar/u/0/r/search?q=${encodeURIComponent(query)}`;
             window.open(urlCalendar, '_blank');
         }
 
@@ -158,4 +156,4 @@
         }
     </script>
 </body>
-</html>        
+</html>
