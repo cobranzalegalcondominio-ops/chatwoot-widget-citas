@@ -25,49 +25,49 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 12px;
+            padding: 8px;
             box-sizing: border-box;
         }
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 16px;
+            padding: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         h3 {
             margin-top: 0;
-            font-size: 16px;
+            font-size: 15px;
             color: var(--primary);
             border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         .info-row {
-            margin-bottom: 10px;
-            font-size: 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
         }
         .info-label {
             font-weight: 600;
             color: var(--text-muted);
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .input-group {
             display: flex;
-            gap: 6px;
+            gap: 4px;
         }
         input[type="text"] {
             width: 100%;
-            padding: 8px;
+            padding: 6px 8px;
             box-sizing: border-box;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 13px;
             background-color: #fff;
             color: var(--text-main);
         }
         .btn-clear {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background-color: var(--secondary);
             color: white;
             border: none;
@@ -83,14 +83,14 @@
         .btn {
             display: block;
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
+            padding: 8px 10px;
+            margin-top: 8px;
             border: none;
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             transition: background 0.2s;
         }
         .btn-primary {
@@ -115,7 +115,7 @@
             background-color: var(--danger-hover);
         }
         .footer-status {
-            margin-top: 12px;
+            margin-top: 10px;
             text-align: center;
             font-size: 11px;
             color: var(--text-muted);
@@ -129,14 +129,14 @@
         
         <div class="info-row">
             <span class="info-label">Contacto (WhatsApp):</span>
-            <span id="contacto-chat" style="font-size: 13px; color: var(--text-muted);">Cargando...</span>
+            <span id="contacto-chat" style="font-size: 12px; color: var(--text-muted);">Cargando...</span>
         </div>
 
         <div class="info-row">
             <label class="info-label" for="busqueda-paciente">Buscar Cita (Nombre, Cédula, Teléfono):</label>
             <div class="input-group">
-                <input type="text" id="busqueda-paciente" placeholder="Escribe nombre, cédula o teléfono...">
-                <button type="button" class="btn-clear" onclick="limpiarCampo()" title="Limpiar para escribir otro dato">Limpiar</button>
+                <input type="text" id="busqueda-paciente" placeholder="Escribe nombre, cédula...">
+                <button type="button" class="btn-clear" onclick="limpiarCampo()" title="Limpiar">Limpiar</button>
             </div>
         </div>
 
@@ -155,7 +155,6 @@
             inputModificadoManualmente = true;
         });
 
-        // Captura de datos desde Chatwoot
         window.addEventListener('message', function (e) {
             try {
                 const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
@@ -208,7 +207,6 @@
             let query = obtenerQuery();
             if (!query) return;
 
-            // Realiza la misma búsqueda profunda para ubicar el evento rápidamente y cambiar su fecha u hora
             const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}&mode=list`;
             window.open(urlCalendar, '_blank');
         }
@@ -218,4 +216,4 @@
         }
     </script>
 </body>
-</html>         
+</html>    
