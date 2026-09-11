@@ -13,8 +13,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
             --success: #10b981;
             --success-hover: #059669;
             --secondary: #64748b;
@@ -83,8 +81,8 @@
         .btn {
             display: block;
             width: 100%;
-            padding: 8px 10px;
-            margin-top: 8px;
+            padding: 9px 10px;
+            margin-top: 10px;
             border: none;
             border-radius: 6px;
             font-weight: 600;
@@ -107,15 +105,8 @@
         .btn-success:hover {
             background-color: var(--success-hover);
         }
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: var(--danger-hover);
-        }
         .footer-status {
-            margin-top: 10px;
+            margin-top: 12px;
             text-align: center;
             font-size: 11px;
             color: var(--text-muted);
@@ -142,7 +133,6 @@
 
         <button class="btn btn-primary" onclick="modificarCita()">Buscar en Google Calendar</button>
         <button class="btn btn-success" onclick="reagendarCita()">Reagendar Cita</button>
-        <button class="btn btn-danger" onclick="cancelarCita()">Buscar para Cancelar</button>
         
         <div class="footer-status">Sincronizado con Chatwoot</div>
     </div>
@@ -163,7 +153,6 @@
                 if (contact) {
                     const nombreChat = contact.name || 'Sin nombre';
                     const telefonoChat = contact.phone_number || contact.phone || '';
-                    const correoChat = contact.email || '';
 
                     document.getElementById('contacto-chat').innerText = `${nombreChat} (${telefonoChat})`;
                     
@@ -210,10 +199,8 @@
             const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}&mode=list`;
             window.open(urlCalendar, '_blank');
         }
-
-        function cancelarCita() {
-            modificarCita();
-        }
     </script>
 </body>
-</html>    
+</html>     
+    
+   
