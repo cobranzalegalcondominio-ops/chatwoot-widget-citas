@@ -125,11 +125,8 @@
                     const telefonoChat = contact.phone_number || contact.phone || '';
                     const correoChat = contact.email || '';
 
-                    // Mostrar info del chat
                     document.getElementById('contacto-chat').innerText = `${nombreChat} (${telefonoChat})`;
                     
-                    // Rellenar automáticamente el input con el nombre o correo del chat, 
-                    // permitiendo que el operador lo edite manualmente si la cita es para otra persona.
                     const inputBusqueda = document.getElementById('busqueda-paciente');
                     if (!inputBusqueda.value || inputBusqueda.value === 'Cargando...') {
                         inputBusqueda.value = correoChat && correoChat !== 'No registrado' ? correoChat : nombreChat;
@@ -153,7 +150,7 @@
         }
 
         function cancelarCita() {
-            modificarCita(); // Usa la misma caja de texto para buscar y ubicar la cita a cancelar
+            modificarCita();
         }
     </script>
 </body>
