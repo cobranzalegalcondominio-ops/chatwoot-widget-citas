@@ -1,766 +1,489 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Citas - Chatwoot</title>
-    <style>
-        :root {
-            --primary: #0284c7;
-            --primary-hover: #0369a1;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --success: #10b981;
-            --success-hover: #059669;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --secondary: #64748b;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        h3 {
-            margin-top: 0;
-            font-size: 15px;
-            color: var(--primary);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 6px;
-        }
-        h4 {
-            margin-top: 16px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: var(--text-main);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 4px;
-        }
-        .info-row {
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .info-label {
-            font-weight: 600;
-            color: var(--text-muted);
-            display: block;
-            margin-bottom: 2px;
-        }
-        .input-group {
-            display: flex;
-            gap: 4px;
-        }
-        input[type="text"],
-        input[type="date"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 6px 8px;
-            box-sizing: border-box;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 13px;
-            background-color: #fff;
-            color: var(--text-main);
-            font-family: inherit;
-        }
-        select:disabled {
-            background-color: #f1f5f9;
-            cursor: not-allowed;
-        }
-        .btn-clear {
-            padding: 6px 10px;
-            background-color: var(--secondary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 9px 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-success { background-color: var(--success); color: white; }
-        .btn-danger { background-color: var(--danger); color: white; }
-        .info-box {
-            background: #e0f2fe;
-            border-left: 3px solid var(--primary);
-            padding: 8px;
-            margin: 8px 0;
-            font-size: 11px;
-            color: #075985;
-            border-radius: 4px;
-        }
-        .error-box {
-            background: #fee2e2;
-            border-left: 3px solid var(--danger);
-            padding: 8px;
-            margin: 8px 0;
-            font-size: 11px;
-            color: #991b1b;
-            border-radius: 4px;
-        }
-        .success-box {
-            background: #d1fae5;
-            border-left: 3px solid var(--success);
-            padding: 8px;
-            margin: 8px 0;
-            font-size: 11px;
-            color: #065f46;
-            border-radius: 4px;
-        }
-        .cita-card {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px;
-            margin: 6px 0;
-            background: #f8fafc;
-            font-size: 12px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-        }
-        .cita-card strong { color: var(--primary); }
-
-        .cita-card:hover {
-            background: #e0f2fe;
-            border-color: var(--primary);
-            transform: translateX(2px);
-        }
-
-        .cita-card.seleccionada {
-            background: #fef3c7;
-            border: 2px solid var(--warning);
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
-        }
-        .cita-card.seleccionada::before {
-            content: "SELECCIONADA";
-            position: absolute;
-            top: -8px;
-            right: 8px;
-            background: var(--warning);
-            color: white;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .cita-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .cita-actions button {
-            flex: 1;
-            padding: 6px;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .hidden { display: none; }
-
-        /* Mensaje de estado - estilos base */
-        .footer-status {
-            margin-top: 12px;
-            padding: 18px 20px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            line-height: 1.4;
-            border-radius: 8px;
-            border-left: 6px solid var(--border-color);
-            background: #f1f5f9;
-            color: var(--text-main);
-            transition: all 0.3s ease;
-            min-height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .grid-info {
-            font-size: 10px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Citas - Chatwoot</title>
+<style>
+:root{--primary:#0284c7;--primary-hover:#0369a1;--bg-color:#f8fafc;--card-bg:#fff;--text-main:#1e293b;--text-muted:#64748b;--border-color:#e2e8f0;--success:#10b981;--success-hover:#059669;--warning:#f59e0b;--danger:#ef4444;--secondary:#64748b}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background-color:var(--bg-color);color:var(--text-main);margin:0;padding:8px;box-sizing:border-box}
+.card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+h3{margin-top:0;font-size:15px;color:var(--primary);border-bottom:2px solid var(--border-color);padding-bottom:6px}
+h4{margin-top:16px;margin-bottom:8px;font-size:13px;color:var(--text-main);border-bottom:1px solid var(--border-color);padding-bottom:4px}
+.info-row{margin-bottom:8px;font-size:13px}
+.info-label{font-weight:600;color:var(--text-muted);display:block;margin-bottom:2px}
+.input-group{display:flex;gap:4px}
+input[type=text],input[type=date],input[type=email],input[type=tel],input[type=number],select{width:100%;padding:6px 8px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:4px;font-size:13px;background-color:#fff;color:var(--text-main);font-family:inherit}
+select:disabled{background-color:#f1f5f9;cursor:not-allowed}
+.btn-clear{padding:6px 10px;background-color:var(--secondary);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
+.btn{display:block;width:100%;padding:9px 10px;margin-top:10px;border:none;border-radius:6px;font-weight:600;cursor:pointer;text-align:center;font-size:13px;transition:background .2s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background-color:var(--primary);color:#fff}
+.btn-success{background-color:var(--success);color:#fff}
+.btn-danger{background-color:var(--danger);color:#fff}
+.info-box{background:#e0f2fe;border-left:3px solid var(--primary);padding:8px;margin:8px 0;font-size:11px;color:#075985;border-radius:4px}
+.error-box{background:#fee2e2;border-left:3px solid var(--danger);padding:8px;margin:8px 0;font-size:11px;color:#991b1b;border-radius:4px}
+.success-box{background:#d1fae5;border-left:3px solid var(--success);padding:8px;margin:8px 0;font-size:11px;color:#065f46;border-radius:4px}
+.cita-card{border:1px solid var(--border-color);border-radius:6px;padding:10px;margin:6px 0;background:#f8fafc;font-size:12px;transition:all .2s ease;cursor:pointer;position:relative}
+.cita-card strong{color:var(--primary)}
+.cita-card:hover{background:#e0f2fe;border-color:var(--primary);transform:translateX(2px)}
+.cita-card.seleccionada{background:#fef3c7;border:2px solid var(--warning);box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+.cita-card.seleccionada::before{content:"SELECCIONADA";position:absolute;top:-8px;right:8px;background:var(--warning);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.5px}
+.cita-actions{display:flex;gap:6px;margin-top:8px}
+.cita-actions button{flex:1;padding:6px;border:none;border-radius:4px;font-weight:600;font-size:11px;cursor:pointer}
+.hidden{display:none}
+.footer-status{margin-top:12px;padding:18px 20px;text-align:center;font-size:24px;font-weight:800;letter-spacing:.5px;line-height:1.4;border-radius:8px;border-left:6px solid var(--border-color);background:#f1f5f9;color:var(--text-main);transition:all .3s ease;min-height:32px;display:flex;align-items:center;justify-content:center}
+.grid-info{font-size:10px;color:var(--text-muted);margin-top:2px}
+</style>
 </head>
 <body>
-
-    <div class="card">
-        <h3>📅 Panel de Citas</h3>
-        
-        <div class="info-row">
-            <span class="info-label">Contacto (WhatsApp):</span>
-            <span id="contacto-chat" style="font-size: 12px; color: var(--text-muted);">Cargando...</span>
-        </div>
-
-        <h4>🔍 Paso 1: Buscar Cita</h4>
-        
-        <div class="info-row">
-            <label class="info-label" for="busqueda-paciente">Buscar (Nombre, Cédula o Teléfono):</label>
-            <div class="input-group">
-                <input type="text" id="busqueda-paciente" placeholder="Escribe nombre, cédula...">
-                <button type="button" class="btn-clear" onclick="limpiarBusqueda()">Limpiar</button>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="buscarCita()" id="btn-buscar">🔍 Buscar Cita</button>
-
-        <div class="footer-status" id="status-msg">⚙️ Sincronizado con n8n</div>
-
-        <div id="resultado-busqueda"></div>
-
-        <div id="seccion-reagendar" class="hidden">
-            <h4>🔄 Paso 2: Reagendar Cita</h4>
-
-            <div class="info-box">
-                ⚠️ Los datos están pre-rellenados. Puedes editarlos.
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="nombre_paciente">Nombre y Apellido:</label>
-                <input type="text" id="nombre_paciente">
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="cedula_paciente">Cédula:</label>
-                <input type="text" id="cedula_paciente">
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="edad_paciente">Edad:</label>
-                <input type="number" id="edad_paciente">
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="telefono_paciente">Teléfono:</label>
-                <input type="tel" id="telefono_paciente">
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="correo_paciente">Correo:</label>
-                <input type="email" id="correo_paciente">
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="medico">Médico:</label>
-                <select id="medico" onchange="cargarHorasValidas()">
-                    <option value="">⏳ Cargando médicos...</option>
-                </select>
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="nueva-fecha">Nueva Fecha:</label>
-                <input type="date" id="nueva-fecha" onchange="cargarHorasValidas()">
-                <div class="grid-info" id="info-dia"></div>
-            </div>
-
-            <div class="info-row">
-                <label class="info-label" for="nueva-hora">Nueva Hora:</label>
-                <select id="nueva-hora" disabled>
-                    <option value="">-- Selecciona médico y fecha --</option>
-                </select>
-                <div class="grid-info" id="info-hora"></div>
-            </div>
-
-            <button class="btn btn-success" onclick="confirmarReagendamiento()" id="btn-reagendar" disabled>
-                ✅ Confirmar Reagendamiento
-            </button>
-
-            <button class="btn btn-danger" onclick="cancelarSeleccion()">
-                ❌ Cancelar
-            </button>
-        </div>
-    </div>
-
-    <script>
-        var N8N_BASE_URL = 'https://n8n.legaltech.com.ve/webhook';
-        
-        var contactoGlobal = "";
-        var inputModificadoManualmente = false;
-        var citaSeleccionada = null;
-
-        window.medicosCargados = [];
-        window.citasEncontradas = [];
-
-        function setStatus(mensaje, tipo) {
-            tipo = tipo || 'info';
-            var el = document.getElementById('status-msg');
-            if (!el) return;
-            
-            var esLargo = mensaje && mensaje.length > 80;
-            
-            el.textContent = mensaje;
-
-            // Resetear todos los estilos primero
-            el.removeAttribute('style');
-            el.className = 'footer-status';
-
-            // Aplicar estilos inline forzados (máxima prioridad)
-            if (tipo === 'success') {
-                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:0.5px;line-height:1.4;text-align:center;background:#d1fae5;color:#065f46;border-left:8px solid #10b981;border-radius:8px;box-shadow:0 4px 12px rgba(16,185,129,0.3);font-family:inherit;';
-            } else if (tipo === 'error') {
-                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:0.5px;line-height:1.4;text-align:center;background:#fee2e2;color:#991b1b;border-left:8px solid #ef4444;border-radius:8px;box-shadow:0 4px 12px rgba(239,68,68,0.3);font-family:inherit;';
-            } else if (tipo === 'warning') {
-                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:0.5px;line-height:1.4;text-align:center;background:#fef3c7;color:#92400e;border-left:8px solid #f59e0b;border-radius:8px;box-shadow:0 4px 12px rgba(245,158,11,0.3);font-family:inherit;';
-            } else {
-                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:12px 16px;font-size:16px;font-weight:600;letter-spacing:0.3px;line-height:1.4;text-align:center;background:#f1f5f9;color:#64748b;border-left:4px solid #e2e8f0;border-radius:6px;font-family:inherit;';
-            }
-
-            // Si es un mensaje largo, ajustar
-            if (esLargo) {
-                el.style.fontSize = '16px';
-                el.style.justifyContent = 'flex-start';
-                el.style.textAlign = 'left';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var hoy = new Date().toISOString().split('T')[0];
-            document.getElementById('nueva-fecha').min = hoy;
-            cargarMedicos();
-
-            document.getElementById('resultado-busqueda').addEventListener('click', function(e) {
-                var card = e.target.closest('.cita-card');
-                if (card && !e.target.closest('.cita-actions')) {
-                    var index = parseInt(card.dataset.index);
-                    if (!isNaN(index)) {
-                        resaltarCita(index);
-                    }
-                }
-            });
-        });
-
-        document.getElementById('busqueda-paciente').addEventListener('input', function() {
-            inputModificadoManualmente = true;
-        });
-
-        window.addEventListener('message', function (e) {
-            try {
-                var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                var contact = data.contact || (data.data && data.data.contact) || (data.event === 'appContext' && data.data && data.data.currentContact);
-                
-                if (contact) {
-                    var nombreChat = contact.name || 'Sin nombre';
-                    var telefonoChat = contact.phone_number || contact.phone || '';
-
-                    document.getElementById('contacto-chat').innerText = nombreChat + ' (' + telefonoChat + ')';
-                    contactoGlobal = (nombreChat && nombreChat !== 'Sin nombre') ? nombreChat : telefonoChat;
-
-                    var inputBusqueda = document.getElementById('busqueda-paciente');
-                    if (!inputModificadoManualmente && (!inputBusqueda.value || inputBusqueda.value === 'Cargando...')) {
-                        inputBusqueda.value = contactoGlobal;
-                    }
-                }
-            } catch (err) {
-                console.error("Error al procesar mensaje:", err);
-            }
-        });
-
-        async function cargarMedicos() {
-            var select = document.getElementById('medico');
-            
-            try {
-                var response = await fetch(N8N_BASE_URL + '/chatwoot/medicos');
-                var data = await response.json();
-
-                window.medicosCargados = data.medicos || [];
-
-                select.innerHTML = '<option value="">-- Seleccionar médico --</option>';
-                
-                if (data.medicos && data.medicos.length > 0) {
-                    for (var i = 0; i < data.medicos.length; i++) {
-                        var med = data.medicos[i];
-                        if (!med.calendar_id || med.calendar_id.trim() === '') continue;
-                        var option = document.createElement('option');
-                        option.value = med.medico_id;
-                        option.textContent = med.nombre + ' (' + med.duracion_slot_min + ' min)';
-                        select.appendChild(option);
-                    }
-                }
-            } catch (err) {
-                console.error('Error cargando médicos:', err);
-            }
-        }
-
-        function limpiarBusqueda() {
-            document.getElementById('busqueda-paciente').value = '';
-            document.getElementById('busqueda-paciente').focus();
-            inputModificadoManualmente = true;
-            document.getElementById('resultado-busqueda').innerHTML = '';
-            document.getElementById('seccion-reagendar').classList.add('hidden');
-            citaSeleccionada = null;
-            setStatus('⚙️ Sincronizado con n8n', 'info');
-        }
-
-        function cancelarSeleccion() {
-            document.getElementById('seccion-reagendar').classList.add('hidden');
-            citaSeleccionada = null;
-            setStatus('⚙️ Sincronizado con n8n', 'info');
-        }
-
-        function resaltarCita(index) {
-            var cards = document.querySelectorAll('.cita-card');
-            for (var i = 0; i < cards.length; i++) {
-                cards[i].classList.remove('seleccionada');
-            }
-            
-            var card = document.getElementById('cita-card-' + index);
-            if (card) {
-                card.classList.add('seleccionada');
-                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        }
-
-        async function buscarCita() {
-            var busqueda = document.getElementById('busqueda-paciente').value.trim();
-            var resultado = document.getElementById('resultado-busqueda');
-            var btnBuscar = document.getElementById('btn-buscar');
-
-            if (!busqueda) {
-                alert('Por favor ingresa el nombre, cédula o teléfono del paciente.');
-                return;
-            }
-
-            btnBuscar.disabled = true;
-            btnBuscar.textContent = 'Buscando...';
-            resultado.innerHTML = '';
-
-            try {
-                var response = await fetch(N8N_BASE_URL + '/chatwoot/buscar-cita', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ busqueda: busqueda })
-                });
-
-                console.log('=== BUSCAR DEBUG ===');
-                console.log('Status:', response.status);
-
-                var rawText = await response.text();
-                console.log('Raw:', rawText);
-
-                var data = null;
-                try {
-                    data = JSON.parse(rawText);
-                } catch (jsonErr) {
-                    resultado.innerHTML = '<div class="error-box">Error: Respuesta inválida de n8n<br><small>' + rawText.substring(0, 200) + '</small></div>';
-                    return;
-                }
-
-                if (!data.ok || !data.citas || data.citas.length === 0) {
-                    var mensajeError = data.error || ('No se encontraron citas para "' + busqueda + '"');
-                    resultado.innerHTML = '<div class="error-box">Error: ' + mensajeError + '</div>';
-                    document.getElementById('seccion-reagendar').classList.add('hidden');
-                    return;
-                }
-
-                window.citasEncontradas = data.citas;
-
-                var html = '<div class="success-box">' + data.total + ' cita(s) encontrada(s)</div>';
-                
-                for (var i = 0; i < data.citas.length; i++) {
-                    var cita = data.citas[i];
-                    html += '<div class="cita-card" data-index="' + i + '" id="cita-card-' + i + '">' +
-                        '<strong>' + cita.summary + '</strong><br>' +
-                        '📅 ' + cita.fecha + ' a las ' + cita.hora + '<br>' +
-                        '👤 ' + (cita.paciente.nombre || 'Sin nombre') + '<br>' +
-                        '📱 ' + (cita.paciente.telefono || 'Sin teléfono') + '<br>' +
-                        '🩺 ' + (cita.medico_nombre || 'Médico no identificado') +
-                        '<div class="cita-actions">' +
-                            '<button style="background:#10b981;color:white;" onclick="elegirReagendar(' + i + ')">🔄 Reagendar</button>' +
-                            '<button style="background:#ef4444;color:white;" onclick="elegirEliminar(' + i + ')">🗑️ Eliminar</button>' +
-                        '</div>' +
-                    '</div>';
-                }
-
-                resultado.innerHTML = html;
-
-            } catch (err) {
-                console.error('Error en fetch:', err);
-                resultado.innerHTML = '<div class="error-box">Error de red: ' + err.message + '</div>';
-            } finally {
-                btnBuscar.disabled = false;
-                btnBuscar.textContent = '🔍 Buscar Cita';
-            }
-        }
-
-        function elegirReagendar(index) {
-            citaSeleccionada = window.citasEncontradas[index];
-            
-            resaltarCita(index);
-            
-            document.getElementById('nombre_paciente').value = citaSeleccionada.paciente.nombre || '';
-            document.getElementById('cedula_paciente').value = citaSeleccionada.paciente.cedula || '';
-            document.getElementById('edad_paciente').value = citaSeleccionada.paciente.edad || '';
-            document.getElementById('telefono_paciente').value = citaSeleccionada.paciente.telefono || '';
-            document.getElementById('correo_paciente').value = citaSeleccionada.paciente.correo || '';
-            
-            document.getElementById('medico').value = citaSeleccionada.medico_id;
-
-            document.getElementById('seccion-reagendar').classList.remove('hidden');
-            document.getElementById('seccion-reagendar').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        async function elegirEliminar(index) {
-            var cita = window.citasEncontradas[index];
-            
-            resaltarCita(index);
-
-            var confirmar = confirm(
-                '¿Eliminar esta cita?\n\n' +
-                'Paciente: ' + cita.paciente.nombre + '\n' +
-                'Fecha: ' + cita.fecha + '\n' +
-                'Hora: ' + cita.hora + '\n' +
-                'Médico: ' + cita.medico_nombre + '\n\n' +
-                'Esta acción NO se puede deshacer.'
-            );
-
-            if (!confirmar) return;
-
-            setStatus('Eliminando cita...', 'warning');
-
-            try {
-                var response = await fetch(N8N_BASE_URL + '/chatwoot/eliminar-cita', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cita_id: cita.id,
-                        calendar_id: cita.calendar_id,
-                        nombre_paciente: cita.paciente.nombre
-                    })
-                });
-
-                console.log('=== ELIMINAR DEBUG ===');
-                console.log('Status:', response.status);
-
-                var rawText = await response.text();
-                console.log('Raw:', rawText);
-
-                var data = null;
-                try {
-                    data = JSON.parse(rawText);
-                } catch (jsonErr) {
-                    setStatus('Error: Respuesta inválida (HTTP ' + response.status + ')', 'error');
-                    console.error('Texto crudo:', rawText);
-                    return;
-                }
-
-                if (data && data.ok) {
-                    setStatus('✅ ' + (data.mensaje || 'Cita eliminada correctamente'), 'success');
-                    
-                    setTimeout(function() {
-                        buscarCita();
-                    }, 1500);
-                } else {
-                    setStatus('❌ ' + (data.error || 'Error al eliminar'), 'error');
-                }
-            } catch (err) {
-                console.error('Error:', err);
-                setStatus('❌ Error de red: ' + err.message, 'error');
-            }
-        }
-
-        async function cargarHorasValidas() {
-            var medicoId = document.getElementById('medico').value;
-            var fecha = document.getElementById('nueva-fecha').value;
-            var selectHora = document.getElementById('nueva-hora');
-            var infoDia = document.getElementById('info-dia');
-            var infoHora = document.getElementById('info-hora');
-            var btnReagendar = document.getElementById('btn-reagendar');
-
-            selectHora.innerHTML = '<option value="">-- Cargando horas --</option>';
-            selectHora.disabled = true;
-            infoDia.textContent = '';
-            infoHora.textContent = '';
-            btnReagendar.disabled = true;
-
-            if (!medicoId || !fecha) return;
-
-            try {
-                var url = N8N_BASE_URL + '/chatwoot/horas-disponibles?medico_id=' + encodeURIComponent(medicoId) + '&fecha=' + encodeURIComponent(fecha);
-                var response = await fetch(url);
-                var data = await response.json();
-
-                if (data.error) {
-                    infoDia.textContent = '❌ ' + data.error;
-                    infoDia.style.color = 'var(--danger)';
-                    selectHora.innerHTML = '<option value="">-- No disponible --</option>';
-                    return;
-                }
-
-                if (data.horas && data.horas.length > 0) {
-                    selectHora.innerHTML = '<option value="">-- Selecciona una hora --</option>';
-                    for (var i = 0; i < data.horas.length; i++) {
-                        var option = document.createElement('option');
-                        option.value = data.horas[i];
-                        option.textContent = data.horas[i];
-                        selectHora.appendChild(option);
-                    }
-                    selectHora.disabled = false;
-
-                    infoDia.textContent = '✅ ' + data.dia_semana + ' - ' + data.horas.length + ' horas disponibles';
-                    infoDia.style.color = 'var(--success)';
-                    infoHora.textContent = 'Duración del slot: ' + data.duracion_slot + ' min';
-                    btnReagendar.disabled = false;
-                } else {
-                    selectHora.innerHTML = '<option value="">-- Sin horas disponibles --</option>';
-                    infoDia.textContent = 'No hay horas disponibles';
-                    infoDia.style.color = 'var(--warning)';
-                }
-            } catch (err) {
-                console.error('Error cargando horas:', err);
-                selectHora.innerHTML = '<option value="">-- Error de conexión --</option>';
-                infoDia.textContent = 'Error al consultar disponibilidad';
-                infoDia.style.color = 'var(--danger)';
-            }
-        }
-
-        async function confirmarReagendamiento() {
-            if (!citaSeleccionada) {
-                alert('No hay cita seleccionada.');
-                return;
-            }
-
-            var medicoId = document.getElementById('medico').value;
-            var fecha = document.getElementById('nueva-fecha').value;
-            var hora = document.getElementById('nueva-hora').value;
-            var nombre = document.getElementById('nombre_paciente').value.trim();
-            var cedula = document.getElementById('cedula_paciente').value.trim();
-            var edad = document.getElementById('edad_paciente').value.trim();
-            var telefono = document.getElementById('telefono_paciente').value.trim();
-            var correo = document.getElementById('correo_paciente').value.trim();
-            var btnReagendar = document.getElementById('btn-reagendar');
-
-            if (!nombre || !cedula) {
-                alert('Por favor completa: Nombre y Cédula.');
-                return;
-            }
-            if (!medicoId || !fecha || !hora) {
-                alert('Por favor completa: Médico, Fecha y Hora.');
-                return;
-            }
-
-            var medicoNuevo = (window.medicosCargados || []).filter(function(m) {
-                return m.medico_id === medicoId;
-            })[0];
-            var calendarDestino = (medicoNuevo && medicoNuevo.calendar_id) ? medicoNuevo.calendar_id : citaSeleccionada.calendar_id;
-            var calendarOrigen = citaSeleccionada.calendar_id;
-
-            console.log('=== REAGENDAR: calendars ===');
-            console.log('ORIGEN:', calendarOrigen);
-            console.log('DESTINO:', calendarDestino);
-
-            var confirmar = confirm(
-                'Confirmas el reagendamiento?\n\n' +
-                'Paciente: ' + nombre + '\n' +
-                'Cita original: ' + citaSeleccionada.fecha + ' ' + citaSeleccionada.hora + '\n' +
-                'Nueva cita: ' + fecha + ' ' + hora + '\n' +
-                'Médico nuevo: ' + (medicoNuevo ? medicoNuevo.nombre : medicoId) + '\n\n' +
-                'La cita se moverá automáticamente.'
-            );
-
-            if (!confirmar) return;
-
-            btnReagendar.disabled = true;
-            setStatus('Procesando...', 'warning');
-
-            try {
-                var response = await fetch(N8N_BASE_URL + '/chatwoot/reagendar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cita_original_id: citaSeleccionada.id,
-                        calendar_id: calendarDestino,
-                        calendar_id_origen: calendarOrigen,
-                        medico_id: medicoId,
-                        nombre_paciente: nombre,
-                        cedula_paciente: cedula,
-                        edad_paciente: edad,
-                        telefono_paciente: telefono,
-                        correo_paciente: correo,
-                        nueva_fecha: fecha,
-                        nueva_hora: hora,
-                        motivo: 'Reagendamiento por asistente'
-                    })
-                });
-
-                console.log('=== REAGENDAR DEBUG ===');
-                console.log('Status HTTP:', response.status);
-
-                var rawText = await response.text();
-                console.log('Raw text:', rawText);
-
-                if (!rawText || rawText.trim() === '') {
-                    setStatus('Error: n8n respondió vacío (HTTP ' + response.status + ')', 'error');
-                    btnReagendar.disabled = false;
-                    return;
-                }
-
-                var result = null;
-                try {
-                    result = JSON.parse(rawText);
-                } catch (jsonErr) {
-                    console.error('Error parseando JSON:', jsonErr);
-                    setStatus('Error: Respuesta no es JSON: ' + rawText.substring(0, 80), 'error');
-                    btnReagendar.disabled = false;
-                    return;
-                }
-
-                if (result.ok) {
-                    setStatus('✅ ' + (result.mensaje || 'Reagendado correctamente'), 'success');
-                    
-                    setTimeout(function() {
-                        buscarCita();
-                        document.getElementById('seccion-reagendar').classList.add('hidden');
-                    }, 1500);
-                } else {
-                    setStatus('Error: ' + (result.error || 'Error'), 'error');
-                    btnReagendar.disabled = false;
-                }
-            } catch (err) {
-                console.error('Error en fetch:', err);
-                setStatus('Error de red: ' + err.message, 'error');
-                btnReagendar.disabled = false;
-            }
-        }
-    </script>
+<div class="card">
+<h3>📅 Panel de Citas</h3>
+<div class="info-row">
+<span class="info-label">Contacto (WhatsApp):</span>
+<span id="contacto-chat" style="font-size:12px;color:var(--text-muted)">Cargando...</span>
+</div>
+<h4>🔍 Paso 1: Buscar Cita</h4>
+<div class="info-row">
+<label class="info-label" for="busqueda-paciente">Buscar (Nombre, Cédula o Teléfono):</label>
+<div class="input-group">
+<input type="text" id="busqueda-paciente" placeholder="Escribe nombre, cédula...">
+<button type="button" class="btn-clear" onclick="limpiarBusqueda()">Limpiar</button>
+</div>
+</div>
+<button class="btn btn-primary" onclick="buscarCita()" id="btn-buscar">🔍 Buscar Cita</button>
+<div class="footer-status" id="status-msg">⚙️ Sincronizado con n8n</div>
+<div id="resultado-busqueda"></div>
+<div id="seccion-reagendar" class="hidden">
+<h4>🔄 Paso 2: Reagendar Cita</h4>
+<div class="info-box">⚠️ Los datos están pre-rellenados. Puedes editarlos.</div>
+<div class="info-row">
+<label class="info-label" for="nombre_paciente">Nombre y Apellido:</label>
+<input type="text" id="nombre_paciente">
+</div>
+<div class="info-row">
+<label class="info-label" for="cedula_paciente">Cédula:</label>
+<input type="text" id="cedula_paciente">
+</div>
+<div class="info-row">
+<label class="info-label" for="edad_paciente">Edad:</label>
+<input type="number" id="edad_paciente">
+</div>
+<div class="info-row">
+<label class="info-label" for="telefono_paciente">Teléfono:</label>
+<input type="tel" id="telefono_paciente">
+</div>
+<div class="info-row">
+<label class="info-label" for="correo_paciente">Correo:</label>
+<input type="email" id="correo_paciente">
+</div>
+<div class="info-row">
+<label class="info-label" for="medico">Médico:</label>
+<select id="medico" onchange="cargarHorasValidas()">
+<option value="">⏳ Cargando médicos...</option>
+</select>
+</div>
+<div class="info-row">
+<label class="info-label" for="nueva-fecha">Nueva Fecha:</label>
+<input type="date" id="nueva-fecha" onchange="cargarHorasValidas()">
+<div class="grid-info" id="info-dia"></div>
+</div>
+<div class="info-row">
+<label class="info-label" for="nueva-hora">Nueva Hora:</label>
+<select id="nueva-hora" disabled>
+<option value="">-- Selecciona médico y fecha --</option>
+</select>
+<div class="grid-info" id="info-hora"></div>
+</div>
+<button class="btn btn-success" onclick="confirmarReagendamiento()" id="btn-reagendar" disabled>✅ Confirmar Reagendamiento</button>
+<button class="btn btn-danger" onclick="cancelarSeleccion()">❌ Cancelar</button>
+</div>
+</div>
+<script>
+var N8N_BASE_URL='https://n8n.legaltech.com.ve/webhook';
+var contactoGlobal="";
+var inputModificadoManualmente=false;
+var citaSeleccionada=null;
+window.medicosCargados=[];
+window.citasEncontradas=[];
+
+function setStatus(mensaje,tipo){
+tipo=tipo||'info';
+var el=document.getElementById('status-msg');
+if(!el)return;
+var esLargo=mensaje&&mensaje.length>80;
+el.textContent=mensaje;
+el.removeAttribute('style');
+el.className='footer-status';
+if(tipo==='success'){
+el.style.cssText='display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:.5px;line-height:1.4;text-align:center;background:#d1fae5;color:#065f46;border-left:8px solid #10b981;border-radius:8px;box-shadow:0 4px 12px rgba(16,185,129,.3);font-family:inherit;';
+}else if(tipo==='error'){
+el.style.cssText='display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:.5px;line-height:1.4;text-align:center;background:#fee2e2;color:#991b1b;border-left:8px solid #ef4444;border-radius:8px;box-shadow:0 4px 12px rgba(239,68,68,.3);font-family:inherit;';
+}else if(tipo==='warning'){
+el.style.cssText='display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:.5px;line-height:1.4;text-align:center;background:#fef3c7;color:#92400e;border-left:8px solid #f59e0b;border-radius:8px;box-shadow:0 4px 12px rgba(245,158,11,.3);font-family:inherit;';
+}else{
+el.style.cssText='display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:12px 16px;font-size:16px;font-weight:600;letter-spacing:.3px;line-height:1.4;text-align:center;background:#f1f5f9;color:#64748b;border-left:4px solid #e2e8f0;border-radius:6px;font-family:inherit;';
+}
+if(esLargo){
+el.style.fontSize='16px';
+el.style.justifyContent='flex-start';
+el.style.textAlign='left';
+}
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+var hoy=new Date().toISOString().split('T')[0];
+document.getElementById('nueva-fecha').min=hoy;
+cargarMedicos();
+document.getElementById('resultado-busqueda').addEventListener('click',function(e){
+var card=e.target.closest('.cita-card');
+if(card&&!e.target.closest('.cita-actions')){
+var index=parseInt(card.dataset.index);
+if(!isNaN(index)){
+resaltarCita(index);
+}
+}
+});
+});
+
+document.getElementById('busqueda-paciente').addEventListener('input',function(){
+inputModificadoManualmente=true;
+});
+
+window.addEventListener('message',function(e){
+try{
+var data=typeof e.data==='string'?JSON.parse(e.data):e.data;
+var contact=data.contact||(data.data&&data.data.contact)||(data.event==='appContext'&&data.data&&data.data.currentContact);
+if(contact){
+var nombreChat=contact.name||'Sin nombre';
+var telefonoChat=contact.phone_number||contact.phone||'';
+document.getElementById('contacto-chat').innerText=nombreChat+' ('+telefonoChat+')';
+contactoGlobal=(nombreChat&&nombreChat!=='Sin nombre')?nombreChat:telefonoChat;
+var inputBusqueda=document.getElementById('busqueda-paciente');
+if(!inputModificadoManualmente&&(!inputBusqueda.value||inputBusqueda.value==='Cargando...')){
+inputBusqueda.value=contactoGlobal;
+}
+}
+}catch(err){
+console.error("Error al procesar mensaje:",err);
+}
+});
+
+async function cargarMedicos(){
+var select=document.getElementById('medico');
+try{
+var response=await fetch(N8N_BASE_URL+'/chatwoot/medicos');
+var data=await response.json();
+window.medicosCargados=data.medicos||[];
+select.innerHTML='<option value="">-- Seleccionar médico --</option>';
+if(data.medicos&&data.medicos.length>0){
+for(var i=0;i<data.medicos.length;i++){
+var med=data.medicos[i];
+if(!med.calendar_id||med.calendar_id.trim()==='')continue;
+var option=document.createElement('option');
+option.value=med.medico_id;
+option.textContent=med.nombre+' ('+med.duracion_slot_min+' min)';
+select.appendChild(option);
+}
+}
+}catch(err){
+console.error('Error cargando médicos:',err);
+}
+}
+
+function limpiarBusqueda(){
+document.getElementById('busqueda-paciente').value='';
+document.getElementById('busqueda-paciente').focus();
+inputModificadoManualmente=true;
+document.getElementById('resultado-busqueda').innerHTML='';
+document.getElementById('seccion-reagendar').classList.add('hidden');
+citaSeleccionada=null;
+setStatus('⚙️ Sincronizado con n8n','info');
+}
+
+function cancelarSeleccion(){
+document.getElementById('seccion-reagendar').classList.add('hidden');
+citaSeleccionada=null;
+setStatus('⚙️ Sincronizado con n8n','info');
+}
+
+function resaltarCita(index){
+var cards=document.querySelectorAll('.cita-card');
+for(var i=0;i<cards.length;i++){
+cards[i].classList.remove('seleccionada');
+}
+var card=document.getElementById('cita-card-'+index);
+if(card){
+card.classList.add('seleccionada');
+card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+}
+
+async function buscarCita(){
+var busqueda=document.getElementById('busqueda-paciente').value.trim();
+var resultado=document.getElementById('resultado-busqueda');
+var btnBuscar=document.getElementById('btn-buscar');
+if(!busqueda){
+alert('Por favor ingresa el nombre, cédula o teléfono del paciente.');
+return;
+}
+btnBuscar.disabled=true;
+btnBuscar.textContent='Buscando...';
+resultado.innerHTML='';
+try{
+var response=await fetch(N8N_BASE_URL+'/chatwoot/buscar-cita',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({busqueda:busqueda})
+});
+console.log('=== BUSCAR DEBUG ===');
+console.log('Status:',response.status);
+var rawText=await response.text();
+console.log('Raw:',rawText);
+var data=null;
+try{
+data=JSON.parse(rawText);
+}catch(jsonErr){
+resultado.innerHTML='<div class="error-box">Error: Respuesta inválida de n8n<br><small>'+rawText.substring(0,200)+'</small></div>';
+return;
+}
+if(!data.ok||!data.citas||data.citas.length===0){
+var mensajeError=data.error||('No se encontraron citas para "'+busqueda+'"');
+resultado.innerHTML='<div class="error-box">Error: '+mensajeError+'</div>';
+document.getElementById('seccion-reagendar').classList.add('hidden');
+return;
+}
+window.citasEncontradas=data.citas;
+var html='<div class="success-box">'+data.total+' cita(s) encontrada(s)</div>';
+for(var i=0;i<data.citas.length;i++){
+var cita=data.citas[i];
+html+='<div class="cita-card" data-index="'+i+'" id="cita-card-'+i+'">'+
+'<strong>'+cita.summary+'</strong><br>'+
+'📅 '+cita.fecha+' a las '+cita.hora+'<br>'+
+'👤 '+(cita.paciente.nombre||'Sin nombre')+'<br>'+
+'📱 '+(cita.paciente.telefono||'Sin teléfono')+'<br>'+
+'🩺 '+(cita.medico_nombre||'Médico no identificado')+
+'<div class="cita-actions">'+
+'<button style="background:#10b981;color:white;" onclick="elegirReagendar('+i+')">🔄 Reagendar</button>'+
+'<button style="background:#ef4444;color:white;" onclick="elegirEliminar('+i+')">🗑️ Eliminar</button>'+
+'</div>'+
+'</div>';
+}
+resultado.innerHTML=html;
+}catch(err){
+console.error('Error en fetch:',err);
+resultado.innerHTML='<div class="error-box">Error de red: '+err.message+'</div>';
+}finally{
+btnBuscar.disabled=false;
+btnBuscar.textContent='🔍 Buscar Cita';
+}
+}
+
+function elegirReagendar(index){
+citaSeleccionada=window.citasEncontradas[index];
+resaltarCita(index);
+document.getElementById('nombre_paciente').value=citaSeleccionada.paciente.nombre||'';
+document.getElementById('cedula_paciente').value=citaSeleccionada.paciente.cedula||'';
+document.getElementById('edad_paciente').value=citaSeleccionada.paciente.edad||'';
+document.getElementById('telefono_paciente').value=citaSeleccionada.paciente.telefono||'';
+document.getElementById('correo_paciente').value=citaSeleccionada.paciente.correo||'';
+document.getElementById('medico').value=citaSeleccionada.medico_id;
+document.getElementById('seccion-reagendar').classList.remove('hidden');
+document.getElementById('seccion-reagendar').scrollIntoView({behavior:'smooth'});
+}
+
+async function elegirEliminar(index){
+var cita=window.citasEncontradas[index];
+resaltarCita(index);
+var confirmar=confirm(
+'¿Eliminar esta cita?\n\n'+
+'Paciente: '+cita.paciente.nombre+'\n'+
+'Fecha: '+cita.fecha+'\n'+
+'Hora: '+cita.hora+'\n'+
+'Médico: '+cita.medico_nombre+'\n\n'+
+'Esta acción NO se puede deshacer.'
+);
+if(!confirmar)return;
+setStatus('Eliminando cita...','warning');
+try{
+var response=await fetch(N8N_BASE_URL+'/chatwoot/eliminar-cita',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+cita_id:cita.id,
+calendar_id:cita.calendar_id,
+nombre_paciente:cita.paciente.nombre
+})
+});
+console.log('=== ELIMINAR DEBUG ===');
+console.log('Status:',response.status);
+var rawText=await response.text();
+console.log('Raw:',rawText);
+var data=null;
+try{
+data=JSON.parse(rawText);
+}catch(jsonErr){
+setStatus('Error: Respuesta inválida (HTTP '+response.status+')','error');
+console.error('Texto crudo:',rawText);
+return;
+}
+if(data&&data.ok){
+setStatus('✅ '+(data.mensaje||'Cita eliminada correctamente'),'success');
+setTimeout(function(){
+buscarCita();
+},1500);
+}else{
+setStatus('❌ '+(data.error||'Error al eliminar'),'error');
+}
+}catch(err){
+console.error('Error:',err);
+setStatus('❌ Error de red: '+err.message,'error');
+}
+}
+
+async function cargarHorasValidas(){
+var medicoId=document.getElementById('medico').value;
+var fecha=document.getElementById('nueva-fecha').value;
+var selectHora=document.getElementById('nueva-hora');
+var infoDia=document.getElementById('info-dia');
+var infoHora=document.getElementById('info-hora');
+var btnReagendar=document.getElementById('btn-reagendar');
+selectHora.innerHTML='<option value="">-- Cargando horas --</option>';
+selectHora.disabled=true;
+infoDia.textContent='';
+infoHora.textContent='';
+btnReagendar.disabled=true;
+if(!medicoId||!fecha)return;
+try{
+var url=N8N_BASE_URL+'/chatwoot/horas-disponibles?medico_id='+encodeURIComponent(medicoId)+'&fecha='+encodeURIComponent(fecha);
+var response=await fetch(url);
+var data=await response.json();
+if(data.error){
+infoDia.textContent='❌ '+data.error;
+infoDia.style.color='var(--danger)';
+selectHora.innerHTML='<option value="">-- No disponible --</option>';
+return;
+}
+if(data.horas&&data.horas.length>0){
+selectHora.innerHTML='<option value="">-- Selecciona una hora --</option>';
+for(var i=0;i<data.horas.length;i++){
+var option=document.createElement('option');
+option.value=data.horas[i];
+option.textContent=data.horas[i];
+selectHora.appendChild(option);
+}
+selectHora.disabled=false;
+infoDia.textContent='✅ '+data.dia_semana+' - '+data.horas.length+' horas disponibles';
+infoDia.style.color='var(--success)';
+infoHora.textContent='Duración del slot: '+data.duracion_slot+' min';
+btnReagendar.disabled=false;
+}else{
+selectHora.innerHTML='<option value="">-- Sin horas disponibles --</option>';
+infoDia.textContent='No hay horas disponibles';
+infoDia.style.color='var(--warning)';
+}
+}catch(err){
+console.error('Error cargando horas:',err);
+selectHora.innerHTML='<option value="">-- Error de conexión --</option>';
+infoDia.textContent='Error al consultar disponibilidad';
+infoDia.style.color='var(--danger)';
+}
+}
+
+async function confirmarReagendamiento(){
+if(!citaSeleccionada){
+alert('No hay cita seleccionada.');
+return;
+}
+var medicoId=document.getElementById('medico').value;
+var fecha=document.getElementById('nueva-fecha').value;
+var hora=document.getElementById('nueva-hora').value;
+var nombre=document.getElementById('nombre_paciente').value.trim();
+var cedula=document.getElementById('cedula_paciente').value.trim();
+var edad=document.getElementById('edad_paciente').value.trim();
+var telefono=document.getElementById('telefono_paciente').value.trim();
+var correo=document.getElementById('correo_paciente').value.trim();
+var btnReagendar=document.getElementById('btn-reagendar');
+if(!nombre||!cedula){
+alert('Por favor completa: Nombre y Cédula.');
+return;
+}
+if(!medicoId||!fecha||!hora){
+alert('Por favor completa: Médico, Fecha y Hora.');
+return;
+}
+var medicoNuevo=(window.medicosCargados||[]).filter(function(m){
+return m.medico_id===medicoId;
+})[0];
+var calendarDestino=(medicoNuevo&&medicoNuevo.calendar_id)?medicoNuevo.calendar_id:citaSeleccionada.calendar_id;
+var calendarOrigen=citaSeleccionada.calendar_id;
+console.log('=== REAGENDAR: calendars ===');
+console.log('ORIGEN:',calendarOrigen);
+console.log('DESTINO:',calendarDestino);
+var confirmar=confirm(
+'Confirmas el reagendamiento?\n\n'+
+'Paciente: '+nombre+'\n'+
+'Cita original: '+citaSeleccionada.fecha+' '+citaSeleccionada.hora+'\n'+
+'Nueva cita: '+fecha+' '+hora+'\n'+
+'Médico nuevo: '+(medicoNuevo?medicoNuevo.nombre:medicoId)+'\n\n'+
+'La cita se moverá automáticamente.'
+);
+if(!confirmar)return;
+btnReagendar.disabled=true;
+setStatus('Procesando...','warning');
+try{
+var response=await fetch(N8N_BASE_URL+'/chatwoot/reagendar',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+cita_original_id:citaSeleccionada.id,
+calendar_id:calendarDestino,
+calendar_id_origen:calendarOrigen,
+medico_id:medicoId,
+nombre_paciente:nombre,
+cedula_paciente:cedula,
+edad_paciente:edad,
+telefono_paciente:telefono,
+correo_paciente:correo,
+nueva_fecha:fecha,
+nueva_hora:hora,
+motivo:'Reagendamiento por asistente'
+})
+});
+console.log('=== REAGENDAR DEBUG ===');
+console.log('Status HTTP:',response.status);
+var rawText=await response.text();
+console.log('Raw text:',rawText);
+if(!rawText||rawText.trim()===''){
+setStatus('Error: n8n respondió vacío (HTTP '+response.status+')','error');
+btnReagendar.disabled=false;
+return;
+}
+var result=null;
+try{
+result=JSON.parse(rawText);
+}catch(jsonErr){
+console.error('Error parseando JSON:',jsonErr);
+setStatus('Error: Respuesta no es JSON: '+rawText.substring(0,80),'error');
+btnReagendar.disabled=false;
+return;
+}
+if(result.ok){
+setStatus('✅ '+(result.mensaje||'Reagendado correctamente'),'success');
+setTimeout(function(){
+buscarCita();
+document.getElementById('seccion-reagendar').classList.add('hidden');
+},1500);
+}else{
+setStatus('Error: '+(result.error||'Error'),'error');
+btnReagendar.disabled=false;
+}
+}catch(err){
+console.error('Error en fetch:',err);
+setStatus('Error de red: '+err.message,'error');
+btnReagendar.disabled=false;
+}
+}
+</script>
 </body>
 </html>
