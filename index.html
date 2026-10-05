@@ -154,14 +154,12 @@
         }
         .cita-card strong { color: var(--primary); }
 
-        /* 🔥 NUEVO: hover de tarjeta */
         .cita-card:hover {
             background: #e0f2fe;
             border-color: var(--primary);
             transform: translateX(2px);
         }
 
-        /* 🔥 NUEVO: tarjeta seleccionada */
         .cita-card.seleccionada {
             background: #fef3c7;
             border: 2px solid var(--warning);
@@ -196,12 +194,62 @@
             cursor: pointer;
         }
         .hidden { display: none; }
+
+        /* 🔥 NUEVO: mensajes de estado grandes y visibles */
         .footer-status {
-            margin-top: 12px;
+            margin-top: 16px;
+            padding: 12px 14px;
             text-align: center;
-            font-size: 11px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: var(--text-main);
+            background: #f1f5f9;
+            border-radius: 6px;
+            border-left: 4px solid var(--border-color);
+            transition: all 0.3s ease;
+            min-height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left-color: var(--success);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+        }
+
+        .footer-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left-color: var(--danger);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+        }
+
+        .footer-status.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left-color: var(--warning);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+        }
+
+        .footer-status.long-msg {
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            padding: 14px;
+            line-height: 1.5;
+            justify-content: flex-start;
+        }
+
+        .footer-status.info {
+            font-size: 13px;
+            font-weight: 500;
             color: var(--text-muted);
         }
+
         .grid-info {
             font-size: 10px;
             color: var(--text-muted);
@@ -295,7 +343,7 @@
             </button>
         </div>
 
-        <div class="footer-status" id="status-msg">Sincronizado con n8n</div>
+        <div class="footer-status info" id="status-msg">⚙️ Sincronizado con n8n</div>
     </div>
 
     <script>
@@ -305,16 +353,34 @@
         let inputModificadoManualmente = false;
         let citaSeleccionada = null;
 
-        // 🔥 Variables globales
         window.medicosCargados = [];
         window.citasEncontradas = [];
+
+        // 🔥 Función helper para mensajes de estado
+        function setStatus(mensaje, tipo = 'info') {
+            const el = document.getElementById('status-msg');
+            if (!el) return;
+            
+            const esLargo = mensaje && mensaje.length > 80;
+            
+            el.className = 'footer-status';
+            
+            if (tipo === 'success') el.classList.add('success');
+            else if (tipo === 'error') el.classList.add('error');
+            else if (tipo === 'warning') el.classList.add('warning');
+            else el.classList.add('info');
+            
+            if (esLargo) el.classList.add('long-msg');
+            
+            el.textContent = mensaje;
+        }
 
         document.addEventListener('DOMContentLoaded', async function() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('nueva-fecha').min = hoy;
             await cargarMedicos();
 
-            // 🔥 NUEVO: delegación de eventos para resaltar tarjeta al hacer click
+            // Delegación de eventos para resaltar tarjeta al hacer click
             document.getElementById('resultado-busqueda').addEventListener('click', function(e) {
                 const card = e.target.closest('.cita-card');
                 if (card && !e.target.closest('.cita-actions')) {
@@ -362,7 +428,6 @@
                 const response = await fetch(`${N8N_BASE_URL}/chatwoot/medicos`);
                 const data = await response.json();
 
-                // 🔥 Guardar médicos en variable global
                 window.medicosCargados = data.medicos || [];
 
                 select.innerHTML = '<option value="">-- Seleccionar médico --</option>';
@@ -388,23 +453,23 @@
             document.getElementById('resultado-busqueda').innerHTML = '';
             document.getElementById('seccion-reagendar').classList.add('hidden');
             citaSeleccionada = null;
+            setStatus('⚙️ Sincronizado con n8n', 'info');
         }
 
         function cancelarSeleccion() {
             document.getElementById('seccion-reagendar').classList.add('hidden');
             citaSeleccionada = null;
+            setStatus('⚙️ Sincronizado con n8n', 'info');
         }
 
         // ============================================
-        // 🔥 NUEVO: Resaltar tarjeta seleccionada
+        // RESALTAR CITA SELECCIONADA
         // ============================================
         function resaltarCita(index) {
-            // Quitar resaltado de TODAS las tarjetas
             document.querySelectorAll('.cita-card').forEach(card => {
                 card.classList.remove('seleccionada');
             });
             
-            // Agregar resaltado SOLO a la tarjeta seleccionada
             const card = document.getElementById(`cita-card-${index}`);
             if (card) {
                 card.classList.add('seleccionada');
@@ -499,7 +564,6 @@
         function elegirReagendar(index) {
             citaSeleccionada = window.citasEncontradas[index];
             
-            // 🔥 Resaltar la tarjeta seleccionada
             resaltarCita(index);
             
             document.getElementById('nombre_paciente').value = citaSeleccionada.paciente.nombre || '';
@@ -520,7 +584,6 @@
         async function elegirEliminar(index) {
             const cita = window.citasEncontradas[index];
             
-            // 🔥 Resaltar también al eliminar (feedback visual)
             resaltarCita(index);
 
             const confirmar = confirm(
@@ -534,9 +597,7 @@
 
             if (!confirmar) return;
 
-            const statusMsg = document.getElementById('status-msg');
-            statusMsg.textContent = '⏳ Eliminando cita...';
-            statusMsg.style.color = 'var(--warning)';
+            setStatus('⏳ Eliminando cita...', 'warning');
 
             try {
                 const response = await fetch(`${N8N_BASE_URL}/chatwoot/eliminar-cita`, {
@@ -559,27 +620,23 @@
                 try {
                     data = JSON.parse(rawText);
                 } catch (jsonErr) {
-                    statusMsg.textContent = `❌ Respuesta inválida (HTTP ${response.status})`;
-                    statusMsg.style.color = 'var(--danger)';
+                    setStatus(`❌ Respuesta inválida (HTTP ${response.status})`, 'error');
                     console.error('Texto crudo:', rawText);
                     return;
                 }
 
                 if (data && data.ok) {
-                    statusMsg.textContent = '✅ ' + (data.mensaje || 'Cita eliminada correctamente');
-                    statusMsg.style.color = 'var(--success)';
+                    setStatus('✅ ' + (data.mensaje || 'Cita eliminada correctamente'), 'success');
                     
                     setTimeout(() => {
                         buscarCita();
                     }, 1500);
                 } else {
-                    statusMsg.textContent = '❌ ' + (data.error || 'Error al eliminar');
-                    statusMsg.style.color = 'var(--danger)';
+                    setStatus('❌ ' + (data.error || 'Error al eliminar'), 'error');
                 }
             } catch (err) {
                 console.error('Error:', err);
-                statusMsg.textContent = '❌ Error de red: ' + err.message;
-                statusMsg.style.color = 'var(--danger)';
+                setStatus('❌ Error de red: ' + err.message, 'error');
             }
         }
 
@@ -658,7 +715,6 @@
             const edad = document.getElementById('edad_paciente').value.trim();
             const telefono = document.getElementById('telefono_paciente').value.trim();
             const correo = document.getElementById('correo_paciente').value.trim();
-            const statusMsg = document.getElementById('status-msg');
             const btnReagendar = document.getElementById('btn-reagendar');
 
             if (!nombre || !cedula) {
@@ -670,7 +726,6 @@
                 return;
             }
 
-            // 🔥 Detectar calendars: destino (nuevo médico) y origen (cita vieja)
             const medicoNuevo = (window.medicosCargados || []).find(
                 m => m.medico_id === medicoId
             );
@@ -694,8 +749,7 @@
             if (!confirmar) return;
 
             btnReagendar.disabled = true;
-            statusMsg.textContent = '⏳ Procesando...';
-            statusMsg.style.color = 'var(--warning)';
+            setStatus('⏳ Procesando...', 'warning');
 
             try {
                 const response = await fetch(`${N8N_BASE_URL}/chatwoot/reagendar`, {
@@ -703,8 +757,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         cita_original_id: citaSeleccionada.id,
-                        calendar_id: calendarDestino,           // calendar del médico nuevo
-                        calendar_id_origen: calendarOrigen,     // calendar original de la cita
+                        calendar_id: calendarDestino,
+                        calendar_id_origen: calendarOrigen,
                         medico_id: medicoId,
                         nombre_paciente: nombre,
                         cedula_paciente: cedula,
@@ -725,8 +779,7 @@
                 console.log('Raw text:', rawText);
 
                 if (!rawText || rawText.trim() === '') {
-                    statusMsg.textContent = `❌ n8n respondió vacío (HTTP ${response.status})`;
-                    statusMsg.style.color = 'var(--danger)';
+                    setStatus(`❌ n8n respondió vacío (HTTP ${response.status})`, 'error');
                     btnReagendar.disabled = false;
                     return;
                 }
@@ -736,29 +789,25 @@
                     result = JSON.parse(rawText);
                 } catch (jsonErr) {
                     console.error('Error parseando JSON:', jsonErr);
-                    statusMsg.textContent = `❌ Respuesta no es JSON: ${rawText.substring(0, 80)}`;
-                    statusMsg.style.color = 'var(--danger)';
+                    setStatus(`❌ Respuesta no es JSON: ${rawText.substring(0, 80)}`, 'error');
                     btnReagendar.disabled = false;
                     return;
                 }
 
                 if (result.ok) {
-                    statusMsg.textContent = '✅ ' + (result.mensaje || 'Reagendado');
-                    statusMsg.style.color = 'var(--success)';
+                    setStatus('✅ ' + (result.mensaje || 'Reagendado'), 'success');
                     
                     setTimeout(() => {
                         buscarCita();
                         document.getElementById('seccion-reagendar').classList.add('hidden');
                     }, 1500);
                 } else {
-                    statusMsg.textContent = '❌ ' + (result.error || 'Error');
-                    statusMsg.style.color = 'var(--danger)';
+                    setStatus('❌ ' + (result.error || 'Error'), 'error');
                     btnReagendar.disabled = false;
                 }
             } catch (err) {
                 console.error('Error en fetch:', err);
-                statusMsg.textContent = '❌ Error de red: ' + err.message;
-                statusMsg.style.color = 'var(--danger)';
+                setStatus('❌ Error de red: ' + err.message, 'error');
                 btnReagendar.disabled = false;
             }
         }
