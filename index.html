@@ -195,59 +195,62 @@
         }
         .hidden { display: none; }
 
-        /* 🔥 NUEVO: mensajes de estado grandes y visibles */
+        /* 🔥 MENSAJES DE ESTADO GRANDES Y VISIBLES */
         .footer-status {
             margin-top: 16px;
-            padding: 12px 14px;
+            padding: 18px 20px !important;
             text-align: center;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
+            font-size: 22px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
             color: var(--text-main);
             background: #f1f5f9;
-            border-radius: 6px;
-            border-left: 4px solid var(--border-color);
+            border-radius: 8px;
+            border-left: 6px solid var(--border-color);
             transition: all 0.3s ease;
-            min-height: 22px;
-            display: flex;
+            min-height: 32px;
+            display: flex !important;
             align-items: center;
             justify-content: center;
+            font-family: inherit !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .footer-status.success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left-color: var(--success);
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+            border-left-color: var(--success) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
         }
 
         .footer-status.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left-color: var(--danger);
-            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            border-left-color: var(--danger) !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
         }
 
         .footer-status.warning {
-            background: #fef3c7;
-            color: #92400e;
-            border-left-color: var(--warning);
-            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+            background: #fef3c7 !important;
+            color: #92400e !important;
+            border-left-color: var(--warning) !important;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
         }
 
         .footer-status.long-msg {
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 16px !important;
+            font-weight: 600 !important;
             text-align: left;
-            padding: 14px;
+            padding: 18px !important;
             line-height: 1.5;
             justify-content: flex-start;
         }
 
         .footer-status.info {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-muted);
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            color: var(--text-muted) !important;
         }
 
         .grid-info {
@@ -380,7 +383,6 @@
             document.getElementById('nueva-fecha').min = hoy;
             await cargarMedicos();
 
-            // Delegación de eventos para resaltar tarjeta al hacer click
             document.getElementById('resultado-busqueda').addEventListener('click', function(e) {
                 const card = e.target.closest('.cita-card');
                 if (card && !e.target.closest('.cita-actions')) {
