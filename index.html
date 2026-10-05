@@ -15,6 +15,8 @@
             --border-color: #e2e8f0;
             --success: #10b981;
             --success-hover: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --secondary: #64748b;
             --secondary-hover: #475569;
         }
@@ -40,6 +42,14 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 6px;
         }
+        h4 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
         .info-row {
             margin-bottom: 8px;
             font-size: 13px;
@@ -54,7 +64,9 @@
             display: flex;
             gap: 4px;
         }
-        input[type="text"] {
+        input[type="text"],
+        input[type="date"],
+        select {
             width: 100%;
             padding: 6px 8px;
             box-sizing: border-box;
@@ -63,6 +75,10 @@
             font-size: 13px;
             background-color: #fff;
             color: var(--text-main);
+        }
+        select:disabled {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
         }
         .btn-clear {
             padding: 6px 10px;
@@ -74,9 +90,6 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-        }
-        .btn-clear:hover {
-            background-color: var(--secondary-hover);
         }
         .btn {
             display: block;
@@ -91,19 +104,44 @@
             font-size: 13px;
             transition: background 0.2s;
         }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         .btn-primary {
             background-color: var(--primary);
             color: white;
-        }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
         }
         .btn-success {
             background-color: var(--success);
             color: white;
         }
-        .btn-success:hover {
-            background-color: var(--success-hover);
+        .info-box {
+            background: #e0f2fe;
+            border-left: 3px solid var(--primary);
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 11px;
+            color: #075985;
+            border-radius: 4px;
+        }
+        .error-box {
+            background: #fee2e2;
+            border-left: 3px solid var(--danger);
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 11px;
+            color: #991b1b;
+            border-radius: 4px;
+        }
+        .success-box {
+            background: #d1fae5;
+            border-left: 3px solid var(--success);
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 11px;
+            color: #065f46;
+            border-radius: 4px;
         }
         .footer-status {
             margin-top: 12px;
@@ -111,36 +149,97 @@
             font-size: 11px;
             color: var(--text-muted);
         }
+        .grid-info {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h3>Panel de Citas</h3>
+        <h3>📅 Panel de Citas</h3>
         
         <div class="info-row">
             <span class="info-label">Contacto (WhatsApp):</span>
             <span id="contacto-chat" style="font-size: 12px; color: var(--text-muted);">Cargando...</span>
         </div>
 
+        <!-- ============================================ -->
+        <!-- BÚSQUEDA DE CITA -->
+        <!-- ============================================ -->
+        <h4>🔍 Buscar Cita</h4>
+        
         <div class="info-row">
-            <label class="info-label" for="busqueda-paciente">Buscar Cita (Nombre, Cédula, Teléfono):</label>
+            <label class="info-label" for="busqueda-paciente">Buscar (Nombre, Cédula, Teléfono):</label>
             <div class="input-group">
                 <input type="text" id="busqueda-paciente" placeholder="Escribe nombre, cédula...">
                 <button type="button" class="btn-clear" onclick="limpiarCampo()" title="Limpiar">Limpiar</button>
             </div>
         </div>
 
-        <button class="btn btn-primary" onclick="modificarCita()">Buscar en Google Calendar</button>
-        <button class="btn btn-success" onclick="reagendarCita()">Reagendar Cita</button>
-        
-        <div class="footer-status">Sincronizado con Chatwoot</div>
+        <button class="btn btn-primary" onclick="buscarEnCalendar()">🔍 Buscar en Google Calendar</button>
+
+        <!-- ============================================ -->
+        <!-- REAGENDAR CITA -->
+        <!-- ============================================ -->
+        <h4>🔄 Reagendar Cita</h4>
+
+        <div class="info-box">
+            Selecciona médico y fecha. Solo se muestran horas válidas.
+        </div>
+
+        <div class="info-row">
+            <label class="info-label" for="medico">Médico:</label>
+            <select id="medico" onchange="cargarHorasValidas()">
+                <option value="">⏳ Cargando médicos...</option>
+            </select>
+        </div>
+
+        <div class="info-row">
+            <label class="info-label" for="nueva-fecha">Nueva Fecha:</label>
+            <input type="date" id="nueva-fecha" onchange="cargarHorasValidas()">
+            <div class="grid-info" id="info-dia"></div>
+        </div>
+
+        <div class="info-row">
+            <label class="info-label" for="nueva-hora">Nueva Hora:</label>
+            <select id="nueva-hora" disabled>
+                <option value="">-- Selecciona médico y fecha --</option>
+            </select>
+            <div class="grid-info" id="info-hora"></div>
+        </div>
+
+        <button class="btn btn-success" onclick="confirmarReagendamiento()" id="btn-reagendar" disabled>
+            ✅ Confirmar Reagendamiento
+        </button>
+
+        <div class="footer-status" id="status-msg">Sincronizado con n8n</div>
     </div>
 
     <script>
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        const N8N_BASE_URL = 'https://n8n.legaltech.com.ve/webhook';
+        
         let contactoGlobal = "";
         let inputModificadoManualmente = false;
 
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('nueva-fecha').min = hoy;
+            
+            await cargarMedicos();
+        });
+
+        // ============================================
+        // ESCUCHAR MENSAJES DE CHATWOOT
+        // ============================================
         document.getElementById('busqueda-paciente').addEventListener('input', function() {
             inputModificadoManualmente = true;
         });
@@ -168,6 +267,95 @@
             }
         });
 
+        // ============================================
+        // CARGAR MÉDICOS DESDE N8N
+        // ============================================
+        async function cargarMedicos() {
+            const select = document.getElementById('medico');
+            
+            try {
+                const response = await fetch(`${N8N_BASE_URL}/chatwoot/medicos`);
+                const data = await response.json();
+
+                select.innerHTML = '<option value="">-- Seleccionar médico --</option>';
+                
+                if (data.medicos && data.medicos.length > 0) {
+                    for (const med of data.medicos) {
+                        const option = document.createElement('option');
+                        option.value = med.medico_id;
+                        option.textContent = `${med.nombre} (${med.duracion_slot_min} min)`;
+                        select.appendChild(option);
+                    }
+                } else {
+                    select.innerHTML = '<option value="">❌ No hay médicos disponibles</option>';
+                }
+            } catch (err) {
+                console.error('Error cargando médicos:', err);
+                select.innerHTML = '<option value="">❌ Error al cargar médicos</option>';
+            }
+        }
+
+        // ============================================
+        // CARGAR HORAS VÁLIDAS DESDE N8N
+        // ============================================
+        async function cargarHorasValidas() {
+            const medicoId = document.getElementById('medico').value;
+            const fecha = document.getElementById('nueva-fecha').value;
+            const selectHora = document.getElementById('nueva-hora');
+            const infoDia = document.getElementById('info-dia');
+            const infoHora = document.getElementById('info-hora');
+            const btnReagendar = document.getElementById('btn-reagendar');
+
+            selectHora.innerHTML = '<option value="">-- Cargando horas --</option>';
+            selectHora.disabled = true;
+            infoDia.textContent = '';
+            infoHora.textContent = '';
+            btnReagendar.disabled = true;
+
+            if (!medicoId || !fecha) return;
+
+            try {
+                const url = `${N8N_BASE_URL}/chatwoot/horas-disponibles?medico_id=${encodeURIComponent(medicoId)}&fecha=${encodeURIComponent(fecha)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    infoDia.textContent = `❌ ${data.error}`;
+                    infoDia.style.color = 'var(--danger)';
+                    selectHora.innerHTML = '<option value="">-- No disponible --</option>';
+                    return;
+                }
+
+                if (data.horas && data.horas.length > 0) {
+                    selectHora.innerHTML = '<option value="">-- Selecciona una hora --</option>';
+                    for (const hora of data.horas) {
+                        const option = document.createElement('option');
+                        option.value = hora;
+                        option.textContent = hora;
+                        selectHora.appendChild(option);
+                    }
+                    selectHora.disabled = false;
+
+                    infoDia.textContent = `✅ ${data.dia_semana} - ${data.horas.length} horas disponibles`;
+                    infoDia.style.color = 'var(--success)';
+                    infoHora.textContent = `Duración del slot: ${data.duracion_slot} min`;
+                    btnReagendar.disabled = false;
+                } else {
+                    selectHora.innerHTML = '<option value="">-- Sin horas disponibles --</option>';
+                    infoDia.textContent = '⚠️ No hay horas disponibles';
+                    infoDia.style.color = 'var(--warning)';
+                }
+            } catch (err) {
+                console.error('Error cargando horas:', err);
+                selectHora.innerHTML = '<option value="">-- Error de conexión --</option>';
+                infoDia.textContent = '❌ Error al consultar disponibilidad';
+                infoDia.style.color = 'var(--danger)';
+            }
+        }
+
+        // ============================================
+        // FUNCIONES AUXILIARES
+        // ============================================
         function limpiarCampo() {
             const input = document.getElementById('busqueda-paciente');
             input.value = '';
@@ -178,13 +366,13 @@
         function obtenerQuery() {
             let query = document.getElementById('busqueda-paciente').value.trim();
             if (!query) {
-                alert("Por favor ingresa un nombre, cédula, teléfono o correo para buscar.");
+                alert("Por favor ingresa un nombre, cédula, teléfono o correo.");
                 return null;
             }
             return query;
         }
 
-        function modificarCita() {
+        function buscarEnCalendar() {
             let query = obtenerQuery();
             if (!query) return;
 
@@ -192,15 +380,37 @@
             window.open(urlCalendar, '_blank');
         }
 
-        function reagendarCita() {
-            let query = obtenerQuery();
-            if (!query) return;
+        // ============================================
+        // CONFIRMAR REAGENDAMIENTO
+        // ============================================
+        async function confirmarReagendamiento() {
+            const medicoId = document.getElementById('medico').value;
+            const fecha = document.getElementById('nueva-fecha').value;
+            const hora = document.getElementById('nueva-hora').value;
+            const busqueda = document.getElementById('busqueda-paciente').value.trim();
+            const statusMsg = document.getElementById('status-msg');
 
-            const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(query)}&mode=list`;
+            if (!medicoId || !fecha || !hora || !busqueda) {
+                alert('Por favor completa todos los campos.');
+                return;
+            }
+
+            const confirmar = confirm(
+                `¿Confirmas el reagendamiento?\n\n` +
+                `Paciente: ${busqueda}\n` +
+                `Nueva fecha: ${fecha}\n` +
+                `Nueva hora: ${hora}\n\n` +
+                `(Se abrirá Google Calendar para que apliques el cambio)`
+            );
+
+            if (!confirmar) return;
+
+            const urlCalendar = `https://calendar.google.com/calendar/u/3/r/search?q=${encodeURIComponent(busqueda)}&mode=list`;
             window.open(urlCalendar, '_blank');
+
+            statusMsg.textContent = '✅ Búsqueda abierta en Calendar. Reagenda manualmente.';
+            statusMsg.style.color = 'var(--success)';
         }
     </script>
 </body>
-</html>     
-    
-   
+</html>
