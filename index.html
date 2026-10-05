@@ -274,6 +274,10 @@
         let inputModificadoManualmente = false;
         let citaSeleccionada = null;
 
+        // 🔥 NUEVO: variable global para médicos cargados
+        window.medicosCargados = [];
+        window.citasEncontradas = [];
+
         document.addEventListener('DOMContentLoaded', async function() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('nueva-fecha').min = hoy;
@@ -306,12 +310,18 @@
             }
         });
 
+        // ============================================
+        // CARGAR MÉDICOS (con guardado global)
+        // ============================================
         async function cargarMedicos() {
             const select = document.getElementById('medico');
             
             try {
                 const response = await fetch(`${N8N_BASE_URL}/chatwoot/medicos`);
                 const data = await response.json();
+
+                // 🔥 NUEVO: guardar la lista completa en variable global
+                window.medicosCargados = data.medicos || [];
 
                 select.innerHTML = '<option value="">-- Seleccionar médico --</option>';
                 
@@ -344,7 +354,7 @@
         }
 
         // ============================================
-        // BUSCAR CITA (con debug)
+        // BUSCAR CITA
         // ============================================
         async function buscarCita() {
             const busqueda = document.getElementById('busqueda-paciente').value.trim();
@@ -369,7 +379,6 @@
 
                 console.log('=== BUSCAR DEBUG ===');
                 console.log('Status:', response.status);
-                console.log('Headers:', [...response.headers.entries()]);
 
                 const rawText = await response.text();
                 console.log('Raw:', rawText);
@@ -400,7 +409,8 @@
                             <strong>${cita.summary}</strong><br>
                             📅 ${cita.fecha} a las ${cita.hora}<br>
                             👤 ${cita.paciente.nombre || 'Sin nombre'}<br>
-                            📱 ${cita.paciente.telefono || 'Sin teléfono'}
+                            📱 ${cita.paciente.telefono || 'Sin teléfono'}<br>
+                            🩺 ${cita.medico_nombre || 'Médico no identificado'}
                             <div class="cita-actions">
                                 <button style="background:#10b981;color:white;" onclick="elegirReagendar(${i})">
                                     🔄 Reagendar
@@ -443,7 +453,7 @@
         }
 
         // ============================================
-        // ELEGIR ELIMINAR (con debug)
+        // ELEGIR ELIMINAR
         // ============================================
         async function elegirEliminar(index) {
             const cita = window.citasEncontradas[index];
@@ -476,7 +486,6 @@
 
                 console.log('=== ELIMINAR DEBUG ===');
                 console.log('Status:', response.status);
-                console.log('Headers:', [...response.headers.entries()]);
 
                 const rawText = await response.text();
                 console.log('Raw:', rawText);
@@ -568,7 +577,7 @@
         }
 
         // ============================================
-        // CONFIRMAR REAGENDAMIENTO (con debug completo)
+        // CONFIRMAR REAGENDAMIENTO (con calendars correctos)
         // ============================================
         async function confirmarReagendamiento() {
             if (!citaSeleccionada) {
@@ -596,11 +605,24 @@
                 return;
             }
 
+            // 🔥 NUEVO: detectar el calendar del médico DESTINO
+            const medicoNuevo = (window.medicosCargados || []).find(
+                m => m.medico_id === medicoId
+            );
+            const calendarDestino = medicoNuevo?.calendar_id || citaSeleccionada.calendar_id;
+            const calendarOrigen = citaSeleccionada.calendar_id;
+
+            console.log('=== REAGENDAR: calendars ===');
+            console.log('ORIGEN:', calendarOrigen);
+            console.log('DESTINO:', calendarDestino);
+            console.log('Médico nuevo:', medicoNuevo?.nombre);
+
             const confirmar = confirm(
                 `¿Confirmas el reagendamiento?\n\n` +
                 `Paciente: ${nombre}\n` +
                 `Cita original: ${citaSeleccionada.fecha} ${citaSeleccionada.hora}\n` +
-                `Nueva cita: ${fecha} ${hora}\n\n` +
+                `Nueva cita: ${fecha} ${hora}\n` +
+                `Médico nuevo: ${medicoNuevo?.nombre || medicoId}\n\n` +
                 `La cita se moverá automáticamente.`
             );
 
@@ -616,7 +638,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         cita_original_id: citaSeleccionada.id,
-                        calendar_id: citaSeleccionada.calendar_id,
+                        calendar_id: calendarDestino,           // 🔥 calendar del médico nuevo
+                        calendar_id_origen: calendarOrigen,     // 🔥 calendar original de la cita
                         medico_id: medicoId,
                         nombre_paciente: nombre,
                         cedula_paciente: cedula,
@@ -629,15 +652,11 @@
                     })
                 });
 
-                // 🔥 DEBUG COMPLETO
                 console.log('=== REAGENDAR DEBUG ===');
                 console.log('Status HTTP:', response.status);
-                console.log('Status Text:', response.statusText);
-                console.log('Headers:', [...response.headers.entries()]);
                 console.log('URL:', response.url);
 
                 const rawText = await response.text();
-                console.log('Raw length:', rawText.length);
                 console.log('Raw text:', rawText);
 
                 if (!rawText || rawText.trim() === '') {
