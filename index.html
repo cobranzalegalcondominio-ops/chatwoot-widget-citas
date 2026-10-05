@@ -148,8 +148,39 @@
             margin: 6px 0;
             background: #f8fafc;
             font-size: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
         }
         .cita-card strong { color: var(--primary); }
+
+        /* 🔥 NUEVO: hover de tarjeta */
+        .cita-card:hover {
+            background: #e0f2fe;
+            border-color: var(--primary);
+            transform: translateX(2px);
+        }
+
+        /* 🔥 NUEVO: tarjeta seleccionada */
+        .cita-card.seleccionada {
+            background: #fef3c7;
+            border: 2px solid var(--warning);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+        }
+        .cita-card.seleccionada::before {
+            content: "✓ SELECCIONADA";
+            position: absolute;
+            top: -8px;
+            right: 8px;
+            background: var(--warning);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+        }
+
         .cita-actions {
             display: flex;
             gap: 6px;
@@ -274,7 +305,7 @@
         let inputModificadoManualmente = false;
         let citaSeleccionada = null;
 
-        // 🔥 NUEVO: variable global para médicos cargados
+        // 🔥 Variables globales
         window.medicosCargados = [];
         window.citasEncontradas = [];
 
@@ -282,6 +313,17 @@
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('nueva-fecha').min = hoy;
             await cargarMedicos();
+
+            // 🔥 NUEVO: delegación de eventos para resaltar tarjeta al hacer click
+            document.getElementById('resultado-busqueda').addEventListener('click', function(e) {
+                const card = e.target.closest('.cita-card');
+                if (card && !e.target.closest('.cita-actions')) {
+                    const index = parseInt(card.dataset.index);
+                    if (!isNaN(index)) {
+                        resaltarCita(index);
+                    }
+                }
+            });
         });
 
         document.getElementById('busqueda-paciente').addEventListener('input', function() {
@@ -311,7 +353,7 @@
         });
 
         // ============================================
-        // CARGAR MÉDICOS (con guardado global)
+        // CARGAR MÉDICOS
         // ============================================
         async function cargarMedicos() {
             const select = document.getElementById('medico');
@@ -320,7 +362,7 @@
                 const response = await fetch(`${N8N_BASE_URL}/chatwoot/medicos`);
                 const data = await response.json();
 
-                // 🔥 NUEVO: guardar la lista completa en variable global
+                // 🔥 Guardar médicos en variable global
                 window.medicosCargados = data.medicos || [];
 
                 select.innerHTML = '<option value="">-- Seleccionar médico --</option>';
@@ -351,6 +393,23 @@
         function cancelarSeleccion() {
             document.getElementById('seccion-reagendar').classList.add('hidden');
             citaSeleccionada = null;
+        }
+
+        // ============================================
+        // 🔥 NUEVO: Resaltar tarjeta seleccionada
+        // ============================================
+        function resaltarCita(index) {
+            // Quitar resaltado de TODAS las tarjetas
+            document.querySelectorAll('.cita-card').forEach(card => {
+                card.classList.remove('seleccionada');
+            });
+            
+            // Agregar resaltado SOLO a la tarjeta seleccionada
+            const card = document.getElementById(`cita-card-${index}`);
+            if (card) {
+                card.classList.add('seleccionada');
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
         // ============================================
@@ -405,7 +464,7 @@
                 for (let i = 0; i < data.citas.length; i++) {
                     const cita = data.citas[i];
                     html += `
-                        <div class="cita-card">
+                        <div class="cita-card" data-index="${i}" id="cita-card-${i}">
                             <strong>${cita.summary}</strong><br>
                             📅 ${cita.fecha} a las ${cita.hora}<br>
                             👤 ${cita.paciente.nombre || 'Sin nombre'}<br>
@@ -440,6 +499,9 @@
         function elegirReagendar(index) {
             citaSeleccionada = window.citasEncontradas[index];
             
+            // 🔥 Resaltar la tarjeta seleccionada
+            resaltarCita(index);
+            
             document.getElementById('nombre_paciente').value = citaSeleccionada.paciente.nombre || '';
             document.getElementById('cedula_paciente').value = citaSeleccionada.paciente.cedula || '';
             document.getElementById('edad_paciente').value = citaSeleccionada.paciente.edad || '';
@@ -458,6 +520,9 @@
         async function elegirEliminar(index) {
             const cita = window.citasEncontradas[index];
             
+            // 🔥 Resaltar también al eliminar (feedback visual)
+            resaltarCita(index);
+
             const confirmar = confirm(
                 `⚠️ ¿Eliminar esta cita?\n\n` +
                 `Paciente: ${cita.paciente.nombre}\n` +
@@ -577,7 +642,7 @@
         }
 
         // ============================================
-        // CONFIRMAR REAGENDAMIENTO (con calendars correctos)
+        // CONFIRMAR REAGENDAMIENTO
         // ============================================
         async function confirmarReagendamiento() {
             if (!citaSeleccionada) {
@@ -605,7 +670,7 @@
                 return;
             }
 
-            // 🔥 NUEVO: detectar el calendar del médico DESTINO
+            // 🔥 Detectar calendars: destino (nuevo médico) y origen (cita vieja)
             const medicoNuevo = (window.medicosCargados || []).find(
                 m => m.medico_id === medicoId
             );
@@ -638,8 +703,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         cita_original_id: citaSeleccionada.id,
-                        calendar_id: calendarDestino,           // 🔥 calendar del médico nuevo
-                        calendar_id_origen: calendarOrigen,     // 🔥 calendar original de la cita
+                        calendar_id: calendarDestino,           // calendar del médico nuevo
+                        calendar_id_origen: calendarOrigen,     // calendar original de la cita
                         medico_id: medicoId,
                         nombre_paciente: nombre,
                         cedula_paciente: cedula,
