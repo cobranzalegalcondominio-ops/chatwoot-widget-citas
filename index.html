@@ -195,62 +195,24 @@
         }
         .hidden { display: none; }
 
-        /* 🔥 MENSAJES DE ESTADO GRANDES Y VISIBLES */
+        /* CSS del status (por si el inline falla) */
         .footer-status {
-            margin-top: 16px;
-            padding: 18px 20px !important;
+            margin-top: 12px;
+            padding: 18px 20px;
             text-align: center;
-            font-size: 22px !important;
-            font-weight: 800 !important;
+            font-size: 22px;
+            font-weight: 800;
             letter-spacing: 0.5px;
             line-height: 1.4;
-            color: var(--text-main);
-            background: #f1f5f9;
             border-radius: 8px;
             border-left: 6px solid var(--border-color);
+            background: #f1f5f9;
+            color: var(--text-main);
             transition: all 0.3s ease;
             min-height: 32px;
-            display: flex !important;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-family: inherit !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .footer-status.success {
-            background: #d1fae5 !important;
-            color: #065f46 !important;
-            border-left-color: var(--success) !important;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
-        }
-
-        .footer-status.error {
-            background: #fee2e2 !important;
-            color: #991b1b !important;
-            border-left-color: var(--danger) !important;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
-        }
-
-        .footer-status.warning {
-            background: #fef3c7 !important;
-            color: #92400e !important;
-            border-left-color: var(--warning) !important;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
-        }
-
-        .footer-status.long-msg {
-            font-size: 16px !important;
-            font-weight: 600 !important;
-            text-align: left;
-            padding: 18px !important;
-            line-height: 1.5;
-            justify-content: flex-start;
-        }
-
-        .footer-status.info {
-            font-size: 16px !important;
-            font-weight: 600 !important;
-            color: var(--text-muted) !important;
         }
 
         .grid-info {
@@ -281,6 +243,9 @@
         </div>
 
         <button class="btn btn-primary" onclick="buscarCita()" id="btn-buscar">🔍 Buscar Cita</button>
+
+        <!-- 🔥 MENSAJE DE ESTADO (ahora arriba de los resultados) -->
+        <div class="footer-status" id="status-msg" style="background: #f1f5f9; color: #64748b; border-left: 4px solid #e2e8f0;">⚙️ Sincronizado con n8n</div>
 
         <div id="resultado-busqueda"></div>
 
@@ -345,8 +310,6 @@
                 ❌ Cancelar
             </button>
         </div>
-
-        <div class="footer-status info" id="status-msg">⚙️ Sincronizado con n8n</div>
     </div>
 
     <script>
@@ -359,7 +322,7 @@
         window.medicosCargados = [];
         window.citasEncontradas = [];
 
-        // 🔥 Función helper para mensajes de estado
+        // 🔥 Función helper para mensajes de estado (con estilos inline forzados)
         function setStatus(mensaje, tipo = 'info') {
             const el = document.getElementById('status-msg');
             if (!el) return;
@@ -367,15 +330,77 @@
             const esLargo = mensaje && mensaje.length > 80;
             
             el.className = 'footer-status';
-            
-            if (tipo === 'success') el.classList.add('success');
-            else if (tipo === 'error') el.classList.add('error');
-            else if (tipo === 'warning') el.classList.add('warning');
-            else el.classList.add('info');
-            
-            if (esLargo) el.classList.add('long-msg');
-            
             el.textContent = mensaje;
+
+            // 🔥 FORZAR ESTILOS INLINE (máxima prioridad)
+            const baseStyles = {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: '12px',
+                minHeight: '40px',
+                fontFamily: 'inherit',
+                transition: 'all 0.3s ease',
+                letterSpacing: '0.5px',
+                lineHeight: '1.4',
+                textAlign: 'center'
+            };
+
+            if (esLargo) {
+                baseStyles.justifyContent = 'flex-start';
+                baseStyles.textAlign = 'left';
+            }
+
+            if (tipo === 'success') {
+                Object.assign(el.style, baseStyles, {
+                    fontSize: '24px',
+                    fontWeight: '800',
+                    padding: '20px 24px',
+                    background: '#d1fae5',
+                    color: '#065f46',
+                    borderLeft: '6px solid #10b981',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)'
+                });
+            } else if (tipo === 'error') {
+                Object.assign(el.style, baseStyles, {
+                    fontSize: '24px',
+                    fontWeight: '800',
+                    padding: '20px 24px',
+                    background: '#fee2e2',
+                    color: '#991b1b',
+                    borderLeft: '6px solid #ef4444',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)'
+                });
+            } else if (tipo === 'warning') {
+                Object.assign(el.style, baseStyles, {
+                    fontSize: '24px',
+                    fontWeight: '800',
+                    padding: '20px 24px',
+                    background: '#fef3c7',
+                    color: '#92400e',
+                    borderLeft: '6px solid #f59e0b',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)'
+                });
+            } else {
+                Object.assign(el.style, baseStyles, {
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    padding: '12px 16px',
+                    background: '#f1f5f9',
+                    color: '#64748b',
+                    borderLeft: '4px solid #e2e8f0',
+                    borderRadius: '6px',
+                    boxShadow: 'none'
+                });
+            }
+
+            if (esLargo) {
+                el.style.fontSize = '16px';
+                el.style.fontWeight = '600';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', async function() {
