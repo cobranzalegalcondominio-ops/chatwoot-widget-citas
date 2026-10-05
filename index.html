@@ -14,6 +14,7 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --success: #10b981;
+            --success-hover: #059669;
             --warning: #f59e0b;
             --danger: #ef4444;
             --secondary: #64748b;
@@ -343,7 +344,7 @@
         }
 
         // ============================================
-        // BUSCAR CITA (mejorado)
+        // BUSCAR CITA (con debug)
         // ============================================
         async function buscarCita() {
             const busqueda = document.getElementById('busqueda-paciente').value.trim();
@@ -366,22 +367,18 @@
                     body: JSON.stringify({ busqueda: busqueda })
                 });
 
-                // 🔥 NUEVO: leer texto crudo primero
-                const rawText = await response.text();
-                console.log('Respuesta raw:', rawText);
+                console.log('=== BUSCAR DEBUG ===');
+                console.log('Status:', response.status);
+                console.log('Headers:', [...response.headers.entries()]);
 
-                // Intentar parsear como JSON
+                const rawText = await response.text();
+                console.log('Raw:', rawText);
+
                 let data = null;
                 try {
                     data = JSON.parse(rawText);
                 } catch (jsonErr) {
-                    // La respuesta NO es JSON válido → mostrar el texto crudo
                     resultado.innerHTML = `<div class="error-box">❌ Respuesta inválida de n8n<br><small>${rawText.substring(0, 200)}</small></div>`;
-                    return;
-                }
-
-                if (!data) {
-                    resultado.innerHTML = `<div class="error-box">❌ Sin respuesta de n8n</div>`;
                     return;
                 }
 
@@ -446,7 +443,7 @@
         }
 
         // ============================================
-        // ELEGIR ELIMINAR (mejorado)
+        // ELEGIR ELIMINAR (con debug)
         // ============================================
         async function elegirEliminar(index) {
             const cita = window.citasEncontradas[index];
@@ -477,15 +474,18 @@
                     })
                 });
 
-                // 🔥 NUEVO: leer texto crudo primero
+                console.log('=== ELIMINAR DEBUG ===');
+                console.log('Status:', response.status);
+                console.log('Headers:', [...response.headers.entries()]);
+
                 const rawText = await response.text();
-                console.log('Respuesta raw eliminar:', rawText);
+                console.log('Raw:', rawText);
 
                 let data = null;
                 try {
                     data = JSON.parse(rawText);
                 } catch (jsonErr) {
-                    statusMsg.textContent = `❌ Respuesta inválida de n8n`;
+                    statusMsg.textContent = `❌ Respuesta inválida (HTTP ${response.status})`;
                     statusMsg.style.color = 'var(--danger)';
                     console.error('Texto crudo:', rawText);
                     return;
@@ -568,7 +568,7 @@
         }
 
         // ============================================
-        // CONFIRMAR REAGENDAMIENTO
+        // CONFIRMAR REAGENDAMIENTO (con debug completo)
         // ============================================
         async function confirmarReagendamiento() {
             if (!citaSeleccionada) {
@@ -629,7 +629,34 @@
                     })
                 });
 
-                const result = await response.json();
+                // 🔥 DEBUG COMPLETO
+                console.log('=== REAGENDAR DEBUG ===');
+                console.log('Status HTTP:', response.status);
+                console.log('Status Text:', response.statusText);
+                console.log('Headers:', [...response.headers.entries()]);
+                console.log('URL:', response.url);
+
+                const rawText = await response.text();
+                console.log('Raw length:', rawText.length);
+                console.log('Raw text:', rawText);
+
+                if (!rawText || rawText.trim() === '') {
+                    statusMsg.textContent = `❌ n8n respondió vacío (HTTP ${response.status})`;
+                    statusMsg.style.color = 'var(--danger)';
+                    btnReagendar.disabled = false;
+                    return;
+                }
+
+                let result = null;
+                try {
+                    result = JSON.parse(rawText);
+                } catch (jsonErr) {
+                    console.error('Error parseando JSON:', jsonErr);
+                    statusMsg.textContent = `❌ Respuesta no es JSON: ${rawText.substring(0, 80)}`;
+                    statusMsg.style.color = 'var(--danger)';
+                    btnReagendar.disabled = false;
+                    return;
+                }
 
                 if (result.ok) {
                     statusMsg.textContent = '✅ ' + (result.mensaje || 'Reagendado');
@@ -645,8 +672,8 @@
                     btnReagendar.disabled = false;
                 }
             } catch (err) {
-                console.error('Error:', err);
-                statusMsg.textContent = '❌ Error de conexión';
+                console.error('Error en fetch:', err);
+                statusMsg.textContent = '❌ Error de red: ' + err.message;
                 statusMsg.style.color = 'var(--danger)';
                 btnReagendar.disabled = false;
             }
