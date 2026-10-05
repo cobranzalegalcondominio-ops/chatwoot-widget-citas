@@ -166,7 +166,7 @@
             box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
         }
         .cita-card.seleccionada::before {
-            content: "✓ SELECCIONADA";
+            content: "SELECCIONADA";
             position: absolute;
             top: -8px;
             right: 8px;
@@ -199,7 +199,7 @@
             margin-top: 12px;
             padding: 18px 20px;
             text-align: center;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: 0.5px;
             line-height: 1.4;
@@ -311,26 +311,26 @@
     </div>
 
     <script>
-        const N8N_BASE_URL = 'https://n8n.legaltech.com.ve/webhook';
+        var N8N_BASE_URL = 'https://n8n.legaltech.com.ve/webhook';
         
-        let contactoGlobal = "";
-        let inputModificadoManualmente = false;
-        let citaSeleccionada = null;
+        var contactoGlobal = "";
+        var inputModificadoManualmente = false;
+        var citaSeleccionada = null;
 
         window.medicosCargados = [];
         window.citasEncontradas = [];
 
         function setStatus(mensaje, tipo) {
             tipo = tipo || 'info';
-            const el = document.getElementById('status-msg');
+            var el = document.getElementById('status-msg');
             if (!el) return;
             
-            const esLargo = mensaje && mensaje.length > 80;
+            var esLargo = mensaje && mensaje.length > 80;
             
             el.className = 'footer-status';
             el.textContent = mensaje;
 
-            const baseStyles = {
+            var baseStyles = {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: esLargo ? 'flex-start' : 'center',
@@ -395,15 +395,15 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            const hoy = new Date().toISOString().split('T')[0];
+        document.addEventListener('DOMContentLoaded', function() {
+            var hoy = new Date().toISOString().split('T')[0];
             document.getElementById('nueva-fecha').min = hoy;
-            await cargarMedicos();
+            cargarMedicos();
 
             document.getElementById('resultado-busqueda').addEventListener('click', function(e) {
-                const card = e.target.closest('.cita-card');
+                var card = e.target.closest('.cita-card');
                 if (card && !e.target.closest('.cita-actions')) {
-                    const index = parseInt(card.dataset.index);
+                    var index = parseInt(card.dataset.index);
                     if (!isNaN(index)) {
                         resaltarCita(index);
                     }
@@ -417,17 +417,17 @@
 
         window.addEventListener('message', function (e) {
             try {
-                const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                const contact = data.contact || (data.data && data.data.contact) || (data.event === 'appContext' && data.data && data.data.currentContact);
+                var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                var contact = data.contact || (data.data && data.data.contact) || (data.event === 'appContext' && data.data && data.data.currentContact);
                 
                 if (contact) {
-                    const nombreChat = contact.name || 'Sin nombre';
-                    const telefonoChat = contact.phone_number || contact.phone || '';
+                    var nombreChat = contact.name || 'Sin nombre';
+                    var telefonoChat = contact.phone_number || contact.phone || '';
 
                     document.getElementById('contacto-chat').innerText = nombreChat + ' (' + telefonoChat + ')';
                     contactoGlobal = (nombreChat && nombreChat !== 'Sin nombre') ? nombreChat : telefonoChat;
 
-                    const inputBusqueda = document.getElementById('busqueda-paciente');
+                    var inputBusqueda = document.getElementById('busqueda-paciente');
                     if (!inputModificadoManualmente && (!inputBusqueda.value || inputBusqueda.value === 'Cargando...')) {
                         inputBusqueda.value = contactoGlobal;
                     }
@@ -438,20 +438,21 @@
         });
 
         async function cargarMedicos() {
-            const select = document.getElementById('medico');
+            var select = document.getElementById('medico');
             
             try {
-                const response = await fetch(N8N_BASE_URL + '/chatwoot/medicos');
-                const data = await response.json();
+                var response = await fetch(N8N_BASE_URL + '/chatwoot/medicos');
+                var data = await response.json();
 
                 window.medicosCargados = data.medicos || [];
 
                 select.innerHTML = '<option value="">-- Seleccionar médico --</option>';
                 
                 if (data.medicos && data.medicos.length > 0) {
-                    for (const med of data.medicos) {
+                    for (var i = 0; i < data.medicos.length; i++) {
+                        var med = data.medicos[i];
                         if (!med.calendar_id || med.calendar_id.trim() === '') continue;
-                        const option = document.createElement('option');
+                        var option = document.createElement('option');
                         option.value = med.medico_id;
                         option.textContent = med.nombre + ' (' + med.duracion_slot_min + ' min)';
                         select.appendChild(option);
@@ -479,12 +480,12 @@
         }
 
         function resaltarCita(index) {
-            const cards = document.querySelectorAll('.cita-card');
-            for (let i = 0; i < cards.length; i++) {
+            var cards = document.querySelectorAll('.cita-card');
+            for (var i = 0; i < cards.length; i++) {
                 cards[i].classList.remove('seleccionada');
             }
             
-            const card = document.getElementById('cita-card-' + index);
+            var card = document.getElementById('cita-card-' + index);
             if (card) {
                 card.classList.add('seleccionada');
                 card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -492,9 +493,9 @@
         }
 
         async function buscarCita() {
-            const busqueda = document.getElementById('busqueda-paciente').value.trim();
-            const resultado = document.getElementById('resultado-busqueda');
-            const btnBuscar = document.getElementById('btn-buscar');
+            var busqueda = document.getElementById('busqueda-paciente').value.trim();
+            var resultado = document.getElementById('resultado-busqueda');
+            var btnBuscar = document.getElementById('btn-buscar');
 
             if (!busqueda) {
                 alert('Por favor ingresa el nombre, cédula o teléfono del paciente.');
@@ -502,11 +503,11 @@
             }
 
             btnBuscar.disabled = true;
-            btnBuscar.textContent = '⏳ Buscando...';
+            btnBuscar.textContent = 'Buscando...';
             resultado.innerHTML = '';
 
             try {
-                const response = await fetch(N8N_BASE_URL + '/chatwoot/buscar-cita', {
+                var response = await fetch(N8N_BASE_URL + '/chatwoot/buscar-cita', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ busqueda: busqueda })
@@ -515,30 +516,30 @@
                 console.log('=== BUSCAR DEBUG ===');
                 console.log('Status:', response.status);
 
-                const rawText = await response.text();
+                var rawText = await response.text();
                 console.log('Raw:', rawText);
 
-                let data = null;
+                var data = null;
                 try {
                     data = JSON.parse(rawText);
                 } catch (jsonErr) {
-                    resultado.innerHTML = '<div class="error-box">❌ Respuesta inválida de n8n<br><small>' + rawText.substring(0, 200) + '</small></div>';
+                    resultado.innerHTML = '<div class="error-box">Error: Respuesta inválida de n8n<br><small>' + rawText.substring(0, 200) + '</small></div>';
                     return;
                 }
 
                 if (!data.ok || !data.citas || data.citas.length === 0) {
-                    const mensajeError = data.error || ('No se encontraron citas para "' + busqueda + '"');
-                    resultado.innerHTML = '<div class="error-box">❌ ' + mensajeError + '</div>';
+                    var mensajeError = data.error || ('No se encontraron citas para "' + busqueda + '"');
+                    resultado.innerHTML = '<div class="error-box">Error: ' + mensajeError + '</div>';
                     document.getElementById('seccion-reagendar').classList.add('hidden');
                     return;
                 }
 
                 window.citasEncontradas = data.citas;
 
-                let html = '<div class="success-box">✅ ' + data.total + ' cita(s) encontrada(s)</div>';
+                var html = '<div class="success-box">' + data.total + ' cita(s) encontrada(s)</div>';
                 
-                for (let i = 0; i < data.citas.length; i++) {
-                    const cita = data.citas[i];
+                for (var i = 0; i < data.citas.length; i++) {
+                    var cita = data.citas[i];
                     html += '<div class="cita-card" data-index="' + i + '" id="cita-card-' + i + '">' +
                         '<strong>' + cita.summary + '</strong><br>' +
                         '📅 ' + cita.fecha + ' a las ' + cita.hora + '<br>' +
@@ -556,7 +557,7 @@
 
             } catch (err) {
                 console.error('Error en fetch:', err);
-                resultado.innerHTML = '<div class="error-box">❌ Error de red: ' + err.message + '</div>';
+                resultado.innerHTML = '<div class="error-box">Error de red: ' + err.message + '</div>';
             } finally {
                 btnBuscar.disabled = false;
                 btnBuscar.textContent = '🔍 Buscar Cita';
@@ -581,12 +582,12 @@
         }
 
         async function elegirEliminar(index) {
-            const cita = window.citasEncontradas[index];
+            var cita = window.citasEncontradas[index];
             
             resaltarCita(index);
 
-            const confirmar = confirm(
-                '⚠️ ¿Eliminar esta cita?\n\n' +
+            var confirmar = confirm(
+                '¿Eliminar esta cita?\n\n' +
                 'Paciente: ' + cita.paciente.nombre + '\n' +
                 'Fecha: ' + cita.fecha + '\n' +
                 'Hora: ' + cita.hora + '\n' +
@@ -596,10 +597,10 @@
 
             if (!confirmar) return;
 
-            setStatus('⏳ Eliminando cita...', 'warning');
+            setStatus('Eliminando cita...', 'warning');
 
             try {
-                const response = await fetch(N8N_BASE_URL + '/chatwoot/eliminar-cita', {
+                var response = await fetch(N8N_BASE_URL + '/chatwoot/eliminar-cita', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -612,14 +613,14 @@
                 console.log('=== ELIMINAR DEBUG ===');
                 console.log('Status:', response.status);
 
-                const rawText = await response.text();
+                var rawText = await response.text();
                 console.log('Raw:', rawText);
 
-                let data = null;
+                var data = null;
                 try {
                     data = JSON.parse(rawText);
                 } catch (jsonErr) {
-                    setStatus('❌ Respuesta inválida (HTTP ' + response.status + ')', 'error');
+                    setStatus('Error: Respuesta inválida (HTTP ' + response.status + ')', 'error');
                     console.error('Texto crudo:', rawText);
                     return;
                 }
@@ -640,12 +641,12 @@
         }
 
         async function cargarHorasValidas() {
-            const medicoId = document.getElementById('medico').value;
-            const fecha = document.getElementById('nueva-fecha').value;
-            const selectHora = document.getElementById('nueva-hora');
-            const infoDia = document.getElementById('info-dia');
-            const infoHora = document.getElementById('info-hora');
-            const btnReagendar = document.getElementById('btn-reagendar');
+            var medicoId = document.getElementById('medico').value;
+            var fecha = document.getElementById('nueva-fecha').value;
+            var selectHora = document.getElementById('nueva-hora');
+            var infoDia = document.getElementById('info-dia');
+            var infoHora = document.getElementById('info-hora');
+            var btnReagendar = document.getElementById('btn-reagendar');
 
             selectHora.innerHTML = '<option value="">-- Cargando horas --</option>';
             selectHora.disabled = true;
@@ -656,9 +657,9 @@
             if (!medicoId || !fecha) return;
 
             try {
-                const url = N8N_BASE_URL + '/chatwoot/horas-disponibles?medico_id=' + encodeURIComponent(medicoId) + '&fecha=' + encodeURIComponent(fecha);
-                const response = await fetch(url);
-                const data = await response.json();
+                var url = N8N_BASE_URL + '/chatwoot/horas-disponibles?medico_id=' + encodeURIComponent(medicoId) + '&fecha=' + encodeURIComponent(fecha);
+                var response = await fetch(url);
+                var data = await response.json();
 
                 if (data.error) {
                     infoDia.textContent = '❌ ' + data.error;
@@ -669,10 +670,10 @@
 
                 if (data.horas && data.horas.length > 0) {
                     selectHora.innerHTML = '<option value="">-- Selecciona una hora --</option>';
-                    for (const hora of data.horas) {
-                        const option = document.createElement('option');
-                        option.value = hora;
-                        option.textContent = hora;
+                    for (var i = 0; i < data.horas.length; i++) {
+                        var option = document.createElement('option');
+                        option.value = data.horas[i];
+                        option.textContent = data.horas[i];
                         selectHora.appendChild(option);
                     }
                     selectHora.disabled = false;
@@ -683,13 +684,13 @@
                     btnReagendar.disabled = false;
                 } else {
                     selectHora.innerHTML = '<option value="">-- Sin horas disponibles --</option>';
-                    infoDia.textContent = '⚠️ No hay horas disponibles';
+                    infoDia.textContent = 'No hay horas disponibles';
                     infoDia.style.color = 'var(--warning)';
                 }
             } catch (err) {
                 console.error('Error cargando horas:', err);
                 selectHora.innerHTML = '<option value="">-- Error de conexión --</option>';
-                infoDia.textContent = '❌ Error al consultar disponibilidad';
+                infoDia.textContent = 'Error al consultar disponibilidad';
                 infoDia.style.color = 'var(--danger)';
             }
         }
@@ -700,15 +701,15 @@
                 return;
             }
 
-            const medicoId = document.getElementById('medico').value;
-            const fecha = document.getElementById('nueva-fecha').value;
-            const hora = document.getElementById('nueva-hora').value;
-            const nombre = document.getElementById('nombre_paciente').value.trim();
-            const cedula = document.getElementById('cedula_paciente').value.trim();
-            const edad = document.getElementById('edad_paciente').value.trim();
-            const telefono = document.getElementById('telefono_paciente').value.trim();
-            const correo = document.getElementById('correo_paciente').value.trim();
-            const btnReagendar = document.getElementById('btn-reagendar');
+            var medicoId = document.getElementById('medico').value;
+            var fecha = document.getElementById('nueva-fecha').value;
+            var hora = document.getElementById('nueva-hora').value;
+            var nombre = document.getElementById('nombre_paciente').value.trim();
+            var cedula = document.getElementById('cedula_paciente').value.trim();
+            var edad = document.getElementById('edad_paciente').value.trim();
+            var telefono = document.getElementById('telefono_paciente').value.trim();
+            var correo = document.getElementById('correo_paciente').value.trim();
+            var btnReagendar = document.getElementById('btn-reagendar');
 
             if (!nombre || !cedula) {
                 alert('Por favor completa: Nombre y Cédula.');
@@ -719,19 +720,18 @@
                 return;
             }
 
-            const medicoNuevo = (window.medicosCargados || []).filter(function(m) {
+            var medicoNuevo = (window.medicosCargados || []).filter(function(m) {
                 return m.medico_id === medicoId;
             })[0];
-            const calendarDestino = (medicoNuevo && medicoNuevo.calendar_id) ? medicoNuevo.calendar_id : citaSeleccionada.calendar_id;
-            const calendarOrigen = citaSeleccionada.calendar_id;
+            var calendarDestino = (medicoNuevo && medicoNuevo.calendar_id) ? medicoNuevo.calendar_id : citaSeleccionada.calendar_id;
+            var calendarOrigen = citaSeleccionada.calendar_id;
 
             console.log('=== REAGENDAR: calendars ===');
             console.log('ORIGEN:', calendarOrigen);
             console.log('DESTINO:', calendarDestino);
-            console.log('Médico nuevo:', medicoNuevo ? medicoNuevo.nombre : 'N/A');
 
-            const confirmar = confirm(
-                '¿Confirmas el reagendamiento?\n\n' +
+            var confirmar = confirm(
+                'Confirmas el reagendamiento?\n\n' +
                 'Paciente: ' + nombre + '\n' +
                 'Cita original: ' + citaSeleccionada.fecha + ' ' + citaSeleccionada.hora + '\n' +
                 'Nueva cita: ' + fecha + ' ' + hora + '\n' +
@@ -742,10 +742,10 @@
             if (!confirmar) return;
 
             btnReagendar.disabled = true;
-            setStatus('⏳ Procesando...', 'warning');
+            setStatus('Procesando...', 'warning');
 
             try {
-                const response = await fetch(N8N_BASE_URL + '/chatwoot/reagendar', {
+                var response = await fetch(N8N_BASE_URL + '/chatwoot/reagendar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -766,41 +766,40 @@
 
                 console.log('=== REAGENDAR DEBUG ===');
                 console.log('Status HTTP:', response.status);
-                console.log('URL:', response.url);
 
-                const rawText = await response.text();
+                var rawText = await response.text();
                 console.log('Raw text:', rawText);
 
                 if (!rawText || rawText.trim() === '') {
-                    setStatus('❌ n8n respondió vacío (HTTP ' + response.status + ')', 'error');
+                    setStatus('Error: n8n respondió vacío (HTTP ' + response.status + ')', 'error');
                     btnReagendar.disabled = false;
                     return;
                 }
 
-                let result = null;
+                var result = null;
                 try {
                     result = JSON.parse(rawText);
                 } catch (jsonErr) {
                     console.error('Error parseando JSON:', jsonErr);
-                    setStatus('❌ Respuesta no es JSON: ' + rawText.substring(0, 80), 'error');
+                    setStatus('Error: Respuesta no es JSON: ' + rawText.substring(0, 80), 'error');
                     btnReagendar.disabled = false;
                     return;
                 }
 
                 if (result.ok) {
-                    setStatus('✅ ' + (result.mensaje || 'Reagendado'), 'success');
+                    setStatus('✅ ' + (result.mensaje || 'Reagendado correctamente'), 'success');
                     
                     setTimeout(function() {
                         buscarCita();
                         document.getElementById('seccion-reagendar').classList.add('hidden');
                     }, 1500);
                 } else {
-                    setStatus('❌ ' + (result.error || 'Error'), 'error');
+                    setStatus('Error: ' + (result.error || 'Error'), 'error');
                     btnReagendar.disabled = false;
                 }
             } catch (err) {
                 console.error('Error en fetch:', err);
-                setStatus('❌ Error de red: ' + err.message, 'error');
+                setStatus('Error de red: ' + err.message, 'error');
                 btnReagendar.disabled = false;
             }
         }
