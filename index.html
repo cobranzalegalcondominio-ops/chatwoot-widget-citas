@@ -195,6 +195,7 @@
         }
         .hidden { display: none; }
 
+        /* Mensaje de estado - estilos base */
         .footer-status {
             margin-top: 12px;
             padding: 18px 20px;
@@ -327,71 +328,28 @@
             
             var esLargo = mensaje && mensaje.length > 80;
             
-            el.className = 'footer-status';
             el.textContent = mensaje;
 
-            var baseStyles = {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: esLargo ? 'flex-start' : 'center',
-                marginTop: '12px',
-                minHeight: '40px',
-                fontFamily: 'inherit',
-                transition: 'all 0.3s ease',
-                letterSpacing: '0.5px',
-                lineHeight: '1.4',
-                textAlign: esLargo ? 'left' : 'center'
-            };
+            // Resetear todos los estilos primero
+            el.removeAttribute('style');
+            el.className = 'footer-status';
 
+            // Aplicar estilos inline forzados (máxima prioridad)
             if (tipo === 'success') {
-                Object.assign(el.style, baseStyles, {
-                    fontSize: '24px',
-                    fontWeight: '800',
-                    padding: '20px 24px',
-                    background: '#d1fae5',
-                    color: '#065f46',
-                    borderLeft: '6px solid #10b981',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)'
-                });
+                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:0.5px;line-height:1.4;text-align:center;background:#d1fae5;color:#065f46;border-left:8px solid #10b981;border-radius:8px;box-shadow:0 4px 12px rgba(16,185,129,0.3);font-family:inherit;';
             } else if (tipo === 'error') {
-                Object.assign(el.style, baseStyles, {
-                    fontSize: '24px',
-                    fontWeight: '800',
-                    padding: '20px 24px',
-                    background: '#fee2e2',
-                    color: '#991b1b',
-                    borderLeft: '6px solid #ef4444',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)'
-                });
+                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:0.5px;line-height:1.4;text-align:center;background:#fee2e2;color:#991b1b;border-left:8px solid #ef4444;border-radius:8px;box-shadow:0 4px 12px rgba(239,68,68,0.3);font-family:inherit;';
             } else if (tipo === 'warning') {
-                Object.assign(el.style, baseStyles, {
-                    fontSize: '24px',
-                    fontWeight: '800',
-                    padding: '20px 24px',
-                    background: '#fef3c7',
-                    color: '#92400e',
-                    borderLeft: '6px solid #f59e0b',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)'
-                });
+                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:20px 24px;font-size:26px;font-weight:800;letter-spacing:0.5px;line-height:1.4;text-align:center;background:#fef3c7;color:#92400e;border-left:8px solid #f59e0b;border-radius:8px;box-shadow:0 4px 12px rgba(245,158,11,0.3);font-family:inherit;';
             } else {
-                Object.assign(el.style, baseStyles, {
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    padding: '12px 16px',
-                    background: '#f1f5f9',
-                    color: '#64748b',
-                    borderLeft: '4px solid #e2e8f0',
-                    borderRadius: '6px',
-                    boxShadow: 'none'
-                });
+                el.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:12px;min-height:40px;padding:12px 16px;font-size:16px;font-weight:600;letter-spacing:0.3px;line-height:1.4;text-align:center;background:#f1f5f9;color:#64748b;border-left:4px solid #e2e8f0;border-radius:6px;font-family:inherit;';
             }
 
+            // Si es un mensaje largo, ajustar
             if (esLargo) {
                 el.style.fontSize = '16px';
-                el.style.fontWeight = '600';
+                el.style.justifyContent = 'flex-start';
+                el.style.textAlign = 'left';
             }
         }
 
