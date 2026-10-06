@@ -107,6 +107,40 @@ var citaSeleccionada=null;
 window.medicosCargados=[];
 window.citasEncontradas=[];
 
+// ═══════════════════════════════════════════════════════════
+// 🔒 SEGURIDAD: Sanitizar HTML para prevenir XSS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(str){
+if(str===null||str===undefined)return'';
+return String(str)
+.replace(/&/g,'&amp;')
+.replace(/</g,'&lt;')
+.replace(/>/g,'&gt;')
+.replace(/"/g,'&quot;')
+.replace(/'/g,'&#039;');
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🔒 SEGURIDAD: Fetch con timeout (evita cuelgues)
+// ═══════════════════════════════════════════════════════════
+async function fetchConTimeout(url,opts,timeoutMs){
+opts=opts||{};
+timeoutMs=timeoutMs||15000;
+var controller=new AbortController();
+var timeoutId=setTimeout(function(){controller.abort();},timeoutMs);
+try{
+var response=await fetch(url,Object.assign({},opts,{signal:controller.signal}));
+clearTimeout(timeoutId);
+return response;
+}catch(err){
+clearTimeout(timeoutId);
+if(err.name==='AbortError'){
+throw new Error('Tiempo de espera agotado (n8n no responde)');
+}
+throw err;
+}
+}
+
 function setStatus(mensaje,tipo){
 tipo=tipo||'info';
 var el=document.getElementById('status-msg');
@@ -144,10 +178,15 @@ resaltarCita(index);
 }
 }
 });
-});
-
-document.getElementById('busqueda-paciente').addEventListener('input',function(){
+// ═══════════════════════════════════════════════════════════
+// ✅ MOVIDO DENTRO DE DOMContentLoaded
+// ═══════════════════════════════════════════════════════════
+var inputBusqueda=document.getElementById('busqueda-paciente');
+if(inputBusqueda){
+inputBusqueda.addEventListener('input',function(){
 inputModificadoManualmente=true;
+});
+}
 });
 
 window.addEventListener('message',function(e){
@@ -172,7 +211,7 @@ console.error("Error al procesar mensaje:",err);
 async function cargarMedicos(){
 var select=document.getElementById('medico');
 try{
-var response=await fetch(N8N_BASE_URL+'/chatwoot/medicos');
+var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/medicos',{},10000);
 var data=await response.json();
 window.medicosCargados=data.medicos||[];
 select.innerHTML='<option value="">-- Seleccionar médico --</option>';
@@ -185,9 +224,12 @@ option.value=med.medico_id;
 option.textContent=med.nombre+' ('+med.duracion_slot_min+' min)';
 select.appendChild(option);
 }
+}else{
+select.innerHTML='<option value="">-- Sin médicos disponibles --</option>';
 }
 }catch(err){
 console.error('Error cargando médicos:',err);
+select.innerHTML='<option value="">-- Error al cargar médicos --</option>';
 }
 }
 
@@ -224,18 +266,18 @@ var busqueda=document.getElementById('busqueda-paciente').value.trim();
 var resultado=document.getElementById('resultado-busqueda');
 var btnBuscar=document.getElementById('btn-buscar');
 if(!busqueda){
-alert('Por favor ingresa el nombre, cédula o teléfono del paciente.');
+setStatus('Por favor ingresa el nombre, cédula o teléfono del paciente.','warning');
 return;
 }
 btnBuscar.disabled=true;
 btnBuscar.textContent='Buscando...';
 resultado.innerHTML='';
 try{
-var response=await fetch(N8N_BASE_URL+'/chatwoot/buscar-cita',{
+var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/buscar-cita',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({busqueda:busqueda})
-});
+},15000);
 console.log('=== BUSCAR DEBUG ===');
 console.log('Status:',response.status);
 var rawText=await response.text();
@@ -244,25 +286,27 @@ var data=null;
 try{
 data=JSON.parse(rawText);
 }catch(jsonErr){
-resultado.innerHTML='<div class="error-box">Error: Respuesta inválida de n8n<br><small>'+rawText.substring(0,200)+'</small></div>';
+// 🔒 Escape aplicado aquí también
+resultado.innerHTML='<div class="error-box">Error: Respuesta inválida de n8n<br><small>'+escapeHtml(rawText.substring(0,200))+'</small></div>';
 return;
 }
 if(!data.ok||!data.citas||data.citas.length===0){
 var mensajeError=data.error||('No se encontraron citas para "'+busqueda+'"');
-resultado.innerHTML='<div class="error-box">Error: '+mensajeError+'</div>';
+resultado.innerHTML='<div class="error-box">Error: '+escapeHtml(mensajeError)+'</div>';
 document.getElementById('seccion-reagendar').classList.add('hidden');
 return;
 }
 window.citasEncontradas=data.citas;
-var html='<div class="success-box">'+data.total+' cita(s) encontrada(s)</div>';
+// 🔒 Todos los datos del paciente ahora van con escapeHtml
+var html='<div class="success-box">'+escapeHtml(data.total)+' cita(s) encontrada(s)</div>';
 for(var i=0;i<data.citas.length;i++){
 var cita=data.citas[i];
 html+='<div class="cita-card" data-index="'+i+'" id="cita-card-'+i+'">'+
-'<strong>'+cita.summary+'</strong><br>'+
-'📅 '+cita.fecha+' a las '+cita.hora+'<br>'+
-'👤 '+(cita.paciente.nombre||'Sin nombre')+'<br>'+
-'📱 '+(cita.paciente.telefono||'Sin teléfono')+'<br>'+
-'🩺 '+(cita.medico_nombre||'Médico no identificado')+
+'<strong>'+escapeHtml(cita.summary)+'</strong><br>'+
+'📅 '+escapeHtml(cita.fecha)+' a las '+escapeHtml(cita.hora)+'<br>'+
+'👤 '+escapeHtml(cita.paciente.nombre||'Sin nombre')+'<br>'+
+'📱 '+escapeHtml(cita.paciente.telefono||'Sin teléfono')+'<br>'+
+'🩺 '+escapeHtml(cita.medico_nombre||'Médico no identificado')+
 '<div class="cita-actions">'+
 '<button style="background:#10b981;color:white;" onclick="elegirReagendar('+i+')">🔄 Reagendar</button>'+
 '<button style="background:#ef4444;color:white;" onclick="elegirEliminar('+i+')">🗑️ Eliminar</button>'+
@@ -272,7 +316,7 @@ html+='<div class="cita-card" data-index="'+i+'" id="cita-card-'+i+'">'+
 resultado.innerHTML=html;
 }catch(err){
 console.error('Error en fetch:',err);
-resultado.innerHTML='<div class="error-box">Error de red: '+err.message+'</div>';
+resultado.innerHTML='<div class="error-box">Error de red: '+escapeHtml(err.message)+'</div>';
 }finally{
 btnBuscar.disabled=false;
 btnBuscar.textContent='🔍 Buscar Cita';
@@ -306,7 +350,7 @@ var confirmar=confirm(
 if(!confirmar)return;
 setStatus('Eliminando cita...','warning');
 try{
-var response=await fetch(N8N_BASE_URL+'/chatwoot/eliminar-cita',{
+var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/eliminar-cita',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
@@ -314,7 +358,7 @@ cita_id:cita.id,
 calendar_id:cita.calendar_id,
 nombre_paciente:cita.paciente.nombre
 })
-});
+},15000);
 console.log('=== ELIMINAR DEBUG ===');
 console.log('Status:',response.status);
 var rawText=await response.text();
@@ -356,7 +400,7 @@ btnReagendar.disabled=true;
 if(!medicoId||!fecha)return;
 try{
 var url=N8N_BASE_URL+'/chatwoot/horas-disponibles?medico_id='+encodeURIComponent(medicoId)+'&fecha='+encodeURIComponent(fecha);
-var response=await fetch(url);
+var response=await fetchConTimeout(url,{},10000);
 var data=await response.json();
 if(data.error){
 infoDia.textContent='❌ '+data.error;
@@ -392,7 +436,7 @@ infoDia.style.color='var(--danger)';
 
 async function confirmarReagendamiento(){
 if(!citaSeleccionada){
-alert('No hay cita seleccionada.');
+setStatus('No hay cita seleccionada.','warning');
 return;
 }
 var medicoId=document.getElementById('medico').value;
@@ -405,11 +449,11 @@ var telefono=document.getElementById('telefono_paciente').value.trim();
 var correo=document.getElementById('correo_paciente').value.trim();
 var btnReagendar=document.getElementById('btn-reagendar');
 if(!nombre||!cedula){
-alert('Por favor completa: Nombre y Cédula.');
+setStatus('Por favor completa: Nombre y Cédula.','warning');
 return;
 }
 if(!medicoId||!fecha||!hora){
-alert('Por favor completa: Médico, Fecha y Hora.');
+setStatus('Por favor completa: Médico, Fecha y Hora.','warning');
 return;
 }
 var medicoNuevo=(window.medicosCargados||[]).filter(function(m){
@@ -432,7 +476,7 @@ if(!confirmar)return;
 btnReagendar.disabled=true;
 setStatus('Procesando...','warning');
 try{
-var response=await fetch(N8N_BASE_URL+'/chatwoot/reagendar',{
+var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/reagendar',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
@@ -449,7 +493,7 @@ nueva_fecha:fecha,
 nueva_hora:hora,
 motivo:'Reagendamiento por asistente'
 })
-});
+},20000);
 console.log('=== REAGENDAR DEBUG ===');
 console.log('Status HTTP:',response.status);
 var rawText=await response.text();
