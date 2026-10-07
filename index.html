@@ -274,7 +274,7 @@ btnBuscar.disabled=true;
 btnBuscar.textContent='Buscando...';
 resultado.innerHTML='';
 try{
-// ✅ POST para buscar cita (como lo tienes en n8n)
+// ✅ POST para buscar cita
 var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/buscar-cita',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
@@ -301,11 +301,15 @@ window.citasEncontradas=data.citas;
 var html='<div class="success-box">'+escapeHtml(data.total)+' cita(s) encontrada(s)</div>';
 for(var i=0;i<data.citas.length;i++){
 var cita=data.citas[i];
+// ✅ CORRECCIÓN: Manejar paciente como objeto o string
+var pacienteNombre = (typeof cita.paciente === 'object' && cita.paciente !== null) ? (cita.paciente.nombre || 'Sin nombre') : (cita.paciente || 'Sin nombre');
+var pacienteTelefono = (typeof cita.paciente === 'object' && cita.paciente !== null) ? (cita.paciente.telefono || 'Sin teléfono') : 'Sin teléfono';
+
 html+='<div class="cita-card" data-index="'+i+'" id="cita-card-'+i+'">'+
 '<strong>'+escapeHtml(cita.summary)+'</strong><br>'+
 '📅 '+escapeHtml(cita.fecha)+' a las '+escapeHtml(cita.hora)+'<br>'+
-'👤 '+escapeHtml(cita.paciente.nombre||'Sin nombre')+'<br>'+
-'📱 '+escapeHtml(cita.paciente.telefono||'Sin teléfono')+'<br>'+
+'👤 '+escapeHtml(pacienteNombre)+'<br>'+
+'📱 '+escapeHtml(pacienteTelefono)+'<br>'+
 '🩺 '+escapeHtml(cita.medico_nombre||'Médico no identificado')+
 '<div class="cita-actions">'+
 '<button style="background:#10b981;color:white;" onclick="elegirReagendar('+i+')">🔄 Reagendar</button>'+
@@ -326,11 +330,14 @@ btnBuscar.textContent='🔍 Buscar Cita';
 function elegirReagendar(index){
 citaSeleccionada=window.citasEncontradas[index];
 resaltarCita(index);
-document.getElementById('nombre_paciente').value=citaSeleccionada.paciente.nombre||'';
-document.getElementById('cedula_paciente').value=citaSeleccionada.paciente.cedula||'';
-document.getElementById('edad_paciente').value=citaSeleccionada.paciente.edad||'';
-document.getElementById('telefono_paciente').value=citaSeleccionada.paciente.telefono||'';
-document.getElementById('correo_paciente').value=citaSeleccionada.paciente.correo||'';
+// ✅ CORRECCIÓN: Manejar paciente como objeto o string
+var pacienteObj = (typeof citaSeleccionada.paciente === 'object' && citaSeleccionada.paciente !== null) ? citaSeleccionada.paciente : { nombre: citaSeleccionada.paciente || '', cedula: '', edad: '', telefono: '', correo: '' };
+
+document.getElementById('nombre_paciente').value=pacienteObj.nombre||'';
+document.getElementById('cedula_paciente').value=pacienteObj.cedula||'';
+document.getElementById('edad_paciente').value=pacienteObj.edad||'';
+document.getElementById('telefono_paciente').value=pacienteObj.telefono||'';
+document.getElementById('correo_paciente').value=pacienteObj.correo||'';
 document.getElementById('medico').value=citaSeleccionada.medico_id;
 document.getElementById('seccion-reagendar').classList.remove('hidden');
 document.getElementById('seccion-reagendar').scrollIntoView({behavior:'smooth'});
@@ -339,9 +346,12 @@ document.getElementById('seccion-reagendar').scrollIntoView({behavior:'smooth'})
 async function elegirEliminar(index){
 var cita=window.citasEncontradas[index];
 resaltarCita(index);
+// ✅ CORRECCIÓN: Manejar paciente como objeto o string
+var pacienteNombre = (typeof cita.paciente === 'object' && cita.paciente !== null) ? (cita.paciente.nombre || 'Sin nombre') : (cita.paciente || 'Sin nombre');
+
 var confirmar=confirm(
 '¿Eliminar esta cita?\n\n'+
-'Paciente: '+cita.paciente.nombre+'\n'+
+'Paciente: '+pacienteNombre+'\n'+
 'Fecha: '+cita.fecha+'\n'+
 'Hora: '+cita.hora+'\n'+
 'Médico: '+cita.medico_nombre+'\n\n'+
@@ -350,14 +360,13 @@ var confirmar=confirm(
 if(!confirmar)return;
 setStatus('Eliminando cita...','warning');
 try{
-// ✅ POST para eliminar (como lo tienes en n8n)
 var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/eliminar-cita',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
 cita_id:cita.id,
 calendar_id:cita.calendar_id,
-nombre_paciente:cita.paciente.nombre
+nombre_paciente:pacienteNombre
 })
 },15000);
 console.log('=== ELIMINAR DEBUG ===');
@@ -400,7 +409,7 @@ infoHora.textContent='';
 btnReagendar.disabled=true;
 if(!medicoId||!fecha)return;
 try{
-// ✅ GET para horas disponibles (como lo tienes en n8n)
+// ✅ GET para horas disponibles
 var url=N8N_BASE_URL+'/chatwoot/horas-disponibles?medico_id='+encodeURIComponent(medicoId)+'&fecha='+encodeURIComponent(fecha);
 var response=await fetchConTimeout(url,{
 method:'GET'
@@ -480,7 +489,6 @@ if(!confirmar)return;
 btnReagendar.disabled=true;
 setStatus('Procesando...','warning');
 try{
-// ✅ POST para reagendar (como lo tienes en n8n)
 var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/reagendar',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
