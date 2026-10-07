@@ -100,7 +100,8 @@ select:disabled{background-color:#f1f5f9;cursor:not-allowed}
 </div>
 </div>
 <script>
-var N8N_BASE_URL='https://n8n.legaltech.com.ve/webhook';
+// ✅ URL correcta de n8n
+var N8N_BASE_URL='https://ceclinesn8n.legaltech.com.ve/webhook';
 var contactoGlobal="";
 var inputModificadoManualmente=false;
 var citaSeleccionada=null;
@@ -178,9 +179,6 @@ resaltarCita(index);
 }
 }
 });
-// ═══════════════════════════════════════════════════════════
-// ✅ MOVIDO DENTRO DE DOMContentLoaded
-// ═══════════════════════════════════════════════════════════
 var inputBusqueda=document.getElementById('busqueda-paciente');
 if(inputBusqueda){
 inputBusqueda.addEventListener('input',function(){
@@ -211,7 +209,10 @@ console.error("Error al procesar mensaje:",err);
 async function cargarMedicos(){
 var select=document.getElementById('medico');
 try{
-var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/medicos',{},10000);
+// ✅ GET para médicos (como lo tienes en n8n)
+var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/medicos',{
+method:'GET'
+},10000);
 var data=await response.json();
 window.medicosCargados=data.medicos||[];
 select.innerHTML='<option value="">-- Seleccionar médico --</option>';
@@ -273,6 +274,7 @@ btnBuscar.disabled=true;
 btnBuscar.textContent='Buscando...';
 resultado.innerHTML='';
 try{
+// ✅ POST para buscar cita (como lo tienes en n8n)
 var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/buscar-cita',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
@@ -286,7 +288,6 @@ var data=null;
 try{
 data=JSON.parse(rawText);
 }catch(jsonErr){
-// 🔒 Escape aplicado aquí también
 resultado.innerHTML='<div class="error-box">Error: Respuesta inválida de n8n<br><small>'+escapeHtml(rawText.substring(0,200))+'</small></div>';
 return;
 }
@@ -297,7 +298,6 @@ document.getElementById('seccion-reagendar').classList.add('hidden');
 return;
 }
 window.citasEncontradas=data.citas;
-// 🔒 Todos los datos del paciente ahora van con escapeHtml
 var html='<div class="success-box">'+escapeHtml(data.total)+' cita(s) encontrada(s)</div>';
 for(var i=0;i<data.citas.length;i++){
 var cita=data.citas[i];
@@ -350,6 +350,7 @@ var confirmar=confirm(
 if(!confirmar)return;
 setStatus('Eliminando cita...','warning');
 try{
+// ✅ POST para eliminar (como lo tienes en n8n)
 var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/eliminar-cita',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
@@ -399,8 +400,11 @@ infoHora.textContent='';
 btnReagendar.disabled=true;
 if(!medicoId||!fecha)return;
 try{
+// ✅ GET para horas disponibles (como lo tienes en n8n)
 var url=N8N_BASE_URL+'/chatwoot/horas-disponibles?medico_id='+encodeURIComponent(medicoId)+'&fecha='+encodeURIComponent(fecha);
-var response=await fetchConTimeout(url,{},10000);
+var response=await fetchConTimeout(url,{
+method:'GET'
+},10000);
 var data=await response.json();
 if(data.error){
 infoDia.textContent='❌ '+data.error;
@@ -476,6 +480,7 @@ if(!confirmar)return;
 btnReagendar.disabled=true;
 setStatus('Procesando...','warning');
 try{
+// ✅ POST para reagendar (como lo tienes en n8n)
 var response=await fetchConTimeout(N8N_BASE_URL+'/chatwoot/reagendar',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
